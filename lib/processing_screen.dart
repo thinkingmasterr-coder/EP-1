@@ -1,3 +1,4 @@
+// File: lib/processing_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 import '../user_data.dart';
@@ -101,9 +102,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
     // Start the Confetti Animation
     _startConfettiFlipbook();
-
-    // REMOVED: The 4-second delay and auto-navigation is GONE.
-    // The app will now stay on this screen until you click a button.
   }
 
   // --- ANIMATION 2: CONFETTI ---
@@ -119,20 +117,18 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     });
   }
 
-  // --- NAVIGATION ACTION ---
+  // --- NAVIGATION ACTION (UPDATED) ---
   void _goToReceipt() {
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ReceiptScreen(
-            amount: widget.amount,
-            contactName: widget.contactName,
-            contactNumber: widget.contactNumber,
-          ),
-        ),
-      );
-    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to be tall
+      backgroundColor: Colors.transparent, // Transparent for rounded corners
+      builder: (context) => ReceiptScreen(
+        amount: widget.amount,
+        contactName: widget.contactName,
+        contactNumber: widget.contactNumber,
+      ),
+    );
   }
 
   @override
@@ -282,7 +278,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             icon: Icons.share,
             text: "Share",
             onTap: () {
-              // Logic for sharing can go here later
               print("Share clicked");
             }
         ),
@@ -294,7 +289,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     );
   }
 
-  // Updated Helper Widget to handle Taps
   Widget _buildBottomAction({
     required IconData icon,
     required String text,
