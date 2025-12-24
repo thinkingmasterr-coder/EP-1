@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:math'; // To generate random Transaction IDs
-import 'main.dart'; // To go back to Home
+import 'dart:math';
+import 'main.dart'; // To go back to MainScreen
 
 class ReceiptScreen extends StatelessWidget {
   final String amount;
@@ -14,16 +14,22 @@ class ReceiptScreen extends StatelessWidget {
     required this.contactNumber,
   });
 
-  // Helper to generate a fake Transaction ID
-  String get _transactionID {
-    var rng = Random();
-    return "ID#${rng.nextInt(90000000) + 10000000}"; // Generates like ID#41782368
+  String get _transactionID => "ID#${Random().nextInt(90000000) + 4000000000}";
+
+  String get _displayDate {
+    final now = DateTime.now();
+    return "${now.day.toString().padLeft(2,'0')} ${_getMonth(now.month)} ${now.year}   ${_formatTime(now)}";
   }
 
-  // Helper to get current Date/Time string
-  String get _currentDateTime {
-    final now = DateTime.now();
-    return "${now.day.toString().padLeft(2,'0')} Nov ${now.year}  ${now.hour}:${now.minute.toString().padLeft(2,'0')} ${now.hour >= 12 ? 'PM' : 'AM'}";
+  String _getMonth(int month) {
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return months[month-1];
+  }
+
+  String _formatTime(DateTime date) {
+    int hour = date.hour > 12 ? date.hour - 12 : date.hour;
+    String amPm = date.hour >= 12 ? "PM" : "AM";
+    return "${hour}:${date.minute.toString().padLeft(2,'0')} $amPm";
   }
 
   @override
@@ -34,64 +40,66 @@ class ReceiptScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
-          onPressed: () {
-            // GO BACK TO HOME (Resets the flow)
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (context) => const EasypaisaApp()),
-              (route) => false,
-            );
-          },
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Tiny logo simulation
-            CircleAvatar(
-              radius: 10,
-              backgroundColor: const Color(0xFF00AA4F),
-              child: const Text("ep", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(width: 5),
-            const Text("easypaisa", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18)),
-          ],
-        ),
+        automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.black),
+            onPressed: () {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const EasypaisaApp()),
+                    (route) => false,
+              );
+            },
+          ),
+        ],
+        title: const Text("easypaisa", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18, letterSpacing: -0.5)),
       ),
-      body: Column(
-        children: [
-          // 1. SUCCESS HEADER
-          const Icon(Icons.check_circle, color: Color(0xFF00AA4F), size: 60),
-          const SizedBox(height: 10),
-          const Text("Transaction Successful", style: TextStyle(color: Color(0xFF00AA4F), fontSize: 22, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 5),
-          const Text("Money has been sent", style: TextStyle(color: Colors.grey)),
-          const SizedBox(height: 20),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            // --- SUCCESS HEADER ---
+            const Icon(Icons.check_circle, color: Color(0xFF00AA4F), size: 60),
+            const SizedBox(height: 10),
+            const Text("Transaction Successful", style: TextStyle(color: Color(0xFF00AA4F), fontSize: 22, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            const Text("Money has been sent", style: TextStyle(color: Colors.grey, fontSize: 14)),
 
-          // 2. DATE AND ID
-          Text(_currentDateTime, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-          Text(_transactionID, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+            const SizedBox(height: 15),
 
-          const SizedBox(height: 20),
-
-          // 3. DETAILS LIST
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
+            // --- DATE & ID ---
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+              color: Colors.grey[50],
+              width: double.infinity,
               child: Column(
                 children: [
-                  _buildDetailRow("Funding Source", "easypaisa Account", isIcon: true),
-                  _buildDetailRow("Sent to", "$contactName\n$contactNumber", isIcon: false),
-                  _buildDetailRow("Account Details", contactName, isIcon: false), // Using Contact Name as placeholder
-                  _buildDetailRow("Sent by", "FATIMA SHAH\n03025529918", isIcon: false), // Hardcoded from Screenshot
-                  _buildDetailRow("Amount", amount, isIcon: false),
-                  _buildDetailRow("Fee / Charge", "No Charge", isIcon: false),
+                  Text(_displayDate, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 2),
+                  Text(_transactionID, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.w500)),
+                ],
+              ),
+            ),
 
-                  const Divider(color: Colors.grey),
+            const SizedBox(height: 10),
+
+            // --- DETAILS LIST ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 25),
+              child: Column(
+                children: [
+                  _buildDetailRow(label: "Funding Source", value: "easypaisa Account", icon: Icons.account_balance_wallet_outlined),
+                  _buildDetailRow(label: "Sent to", value: contactName, subValue: contactNumber),
+                  _buildDetailRow(label: "Account Details", value: "Shahana Amaan"),
+                  _buildDetailRow(label: "Sent by", value: "FATIMA SHAH", subValue: "03025529918"),
+                  _buildDetailRow(label: "Amount", value: amount),
+                  _buildDetailRow(label: "Fee / Charge", value: "No Charge"),
+
+                  const Divider(color: Colors.grey, thickness: 0.5),
 
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -103,45 +111,43 @@ class ReceiptScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ),
 
-          // 4. BOTTOM ACTION BUTTONS
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildBottomAction(Icons.share, "Share"),
-                _buildBottomAction(Icons.image, "Save to Gallery"),
-                _buildBottomAction(Icons.picture_as_pdf, "Save as PDF"),
-              ],
+            // --- BOTTOM ACTIONS ---
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildActionButton(Icons.share_outlined, "Share"),
+                  Container(height: 30, width: 1, color: Colors.grey[300]),
+                  _buildActionButton(Icons.image_outlined, "Save to Gallery"),
+                  Container(height: 30, width: 1, color: Colors.grey[300]),
+                  _buildActionButton(Icons.picture_as_pdf_outlined, "Save as PDF"),
+                ],
+              ),
             ),
-          )
-        ],
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {required bool isIcon}) {
+  Widget _buildDetailRow({required String label, required String value, String? subValue, IconData? icon}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.only(bottom: 18),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Only show Wallet Icon for the first item
-          if (isIcon)
-            const Padding(
-              padding: EdgeInsets.only(right: 10, top: 2),
-              child: Icon(Icons.account_balance_wallet, size: 20, color: Colors.grey),
-            ),
-
+          SizedBox(width: 30, child: icon != null ? Icon(icon, size: 20, color: Colors.grey) : null),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 5),
-                Text(value, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                Text(label, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15)),
+                const SizedBox(height: 4),
+                Text(value, style: const TextStyle(color: Colors.black87, fontSize: 14)),
+                if (subValue != null) Text(subValue, style: const TextStyle(color: Colors.black87, fontSize: 14)),
               ],
             ),
           ),
@@ -150,12 +156,12 @@ class ReceiptScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomAction(IconData icon, String label) {
+  Widget _buildActionButton(IconData icon, String label) {
     return Column(
       children: [
-        Icon(icon, color: Colors.grey[600]),
-        const SizedBox(height: 5),
-        Text(label, style: TextStyle(color: Colors.grey[600], fontSize: 10)),
+        Icon(icon, color: Colors.black54, size: 24),
+        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(color: Colors.black54, fontSize: 11, fontWeight: FontWeight.w500)),
       ],
     );
   }
