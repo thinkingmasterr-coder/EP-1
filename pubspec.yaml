@@ -19,9 +19,12 @@ dev_dependencies:
   flutter_lints: ^3.0.0
 
 # PAY ATTENTION TO THE SPACES BELOW
+# In your pubspec.yaml
 flutter:
   uses-material-design: true
-
   assets:
     - assets/frames/
     - assets/confetti_frames/
+    - assets/home_bg.png
+    - assets/send_menu_bg.png
+    - assets/settings_bg.jpg  # Add this line
