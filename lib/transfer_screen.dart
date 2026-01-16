@@ -1,8 +1,6 @@
-// File: lib/transfer_screen.dart
 import 'package:flutter/material.dart';
 import 'user_data.dart';
-import 'amount_screen.dart';
-import 'experiment_styles.dart'; // <--- WIRED TO YOUR LAB
+import 'amount_screen.dart'; // Connects to the new screen
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -13,8 +11,8 @@ class TransferScreen extends StatefulWidget {
 
 class _TransferScreenState extends State<TransferScreen> {
   String searchQuery = "";
-  int _selectedToggleIndex = 0;
 
+  // Helper to open the Amount Screen
   void _goToAmountScreen(Map<String, String> contact) {
     Navigator.push(
       context,
@@ -39,43 +37,90 @@ class _TransferScreenState extends State<TransferScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "easypaisa Transfer",
-          style: ExperimentStyles.appBarTitle, // <--- EXPERIMENT HERE
-        ),
+        title: const Text("Send Money", style: TextStyle(color: Colors.black, fontSize: 16)),
         centerTitle: true,
       ),
       body: Column(
         children: [
-          // --- 1. TABS ---
-          Container(
-            decoration: const BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.grey, width: 0.5)),
+          // TABS
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  decoration: const BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Color(0xFF00AA4F), width: 3)),
+                  ),
+                  child: const Text("Send Money", textAlign: TextAlign.center, style: TextStyle(color: Color(0xFF00AA4F), fontWeight: FontWeight.bold)),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: const Text("History", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+                ),
+              ),
+            ],
+          ),
+
+          // FAVORITES SECTION
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: const [
+                    Text("My Easypaisa Favorites", style: TextStyle(fontWeight: FontWeight.bold)),
+                    Text("See All", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: UserData.contacts.map((contact) {
+                      return GestureDetector(
+                        onTap: () => _goToAmountScreen(contact), // CLICKABLE FAVORITE
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 20),
+                          child: Column(
+                            children: [
+                              CircleAvatar(
+                                radius: 25,
+                                backgroundColor: Colors.grey[200],
+                                child: Text(contact["initials"]!, style: const TextStyle(color: Color(0xFF00AA4F))),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(contact["name"]!, style: const TextStyle(fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
             ),
+          ),
+
+          // TOGGLE SWITCH
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(25)),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: const BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Color(0xFF00AA4F), width: 3)),
-                    ),
-                    child: const Text(
-                      "Send Money",
-                      textAlign: TextAlign.center,
-                      style: ExperimentStyles.tabSelected, // <--- EXPERIMENT HERE
-                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(color: const Color(0xFF00AA4F), borderRadius: BorderRadius.circular(25)),
+                    child: const Text("Mobile No.", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                   ),
                 ),
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: const Text(
-                      "History",
-                      textAlign: TextAlign.center,
-                      style: ExperimentStyles.tabUnselected, // <--- EXPERIMENT HERE
-                    ),
-                  ),
+                  child: const Text("Digital Account No", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey, fontSize: 12)),
                 ),
               ],
             ),
@@ -83,136 +128,52 @@ class _TransferScreenState extends State<TransferScreen> {
 
           const SizedBox(height: 20),
 
-          // --- 2. TOGGLE SWITCH ---
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
-            height: 45,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedToggleIndex = 0),
-                    child: Container(
-                      margin: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: _selectedToggleIndex == 0 ? const Color(0xFF00AA4F) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: _selectedToggleIndex == 0 ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 2)] : [],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Mobile No.",
-                        style: _selectedToggleIndex == 0
-                            ? ExperimentStyles.toggleSelected    // <--- EXPERIMENT HERE
-                            : ExperimentStyles.toggleUnselected, // <--- EXPERIMENT HERE
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedToggleIndex = 1),
-                    child: Container(
-                      margin: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: _selectedToggleIndex == 1 ? const Color(0xFF00AA4F) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: _selectedToggleIndex == 1 ? [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 2)] : [],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Digital Account No",
-                        style: _selectedToggleIndex == 1
-                            ? ExperimentStyles.toggleSelected    // <--- EXPERIMENT HERE
-                            : ExperimentStyles.toggleUnselected, // <--- EXPERIMENT HERE
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 25),
-
-          // --- 3. SEARCH BAR ---
+          // SEARCH BAR
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Enter Receiver's Mobile Number",
-                  style: ExperimentStyles.inputLabel, // <--- EXPERIMENT HERE
-                ),
+                const Text("Enter Receiver's Mobile Number", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
                 const SizedBox(height: 10),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        searchQuery = value;
-                      });
-                    },
-                    keyboardType: TextInputType.number,
-                    style: ExperimentStyles.inputText, // <--- EXPERIMENT HERE
-                    decoration: const InputDecoration(
-                      contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-                      border: InputBorder.none,
-                      hintText: "Enter Receiver's Number or select from contacts",
-                      hintStyle: ExperimentStyles.inputHint, // <--- EXPERIMENT HERE
-                      suffixIcon: Icon(Icons.search, color: Colors.grey),
-                    ),
+                TextField(
+                  onChanged: (value) {
+                    setState(() {
+                      searchQuery = value;
+                    });
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: "Enter Receiver's Number or select from contacts",
+                    hintStyle: const TextStyle(fontSize: 12, color: Colors.grey),
+                    suffixIcon: const Icon(Icons.search, color: Colors.grey),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.grey)),
+                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF00AA4F))),
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 10),
-
-          // --- 4. CONTACTS LIST ---
+          // CONTACT LIST
           Expanded(
-            child: searchQuery.isEmpty
-                ? const SizedBox()
-                : ListView.builder(
+            child: ListView.builder(
               itemCount: UserData.contacts.length,
               itemBuilder: (context, index) {
                 final contact = UserData.contacts[index];
-
-                if (!contact["number"]!.contains(searchQuery) && !contact["name"]!.toLowerCase().contains(searchQuery.toLowerCase())) {
-                  return const SizedBox.shrink();
-                }
-
-                return ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
-                  leading: CircleAvatar(
-                    radius: 22,
-                    backgroundColor: const Color(0xFFE8F5E9),
-                    child: Text(
-                        contact["initials"]!,
-                        style: ExperimentStyles.contactInitials // <--- EXPERIMENT HERE
+                if (searchQuery.isEmpty || contact["number"]!.contains(searchQuery)) {
+                  return ListTile(
+                    leading: CircleAvatar(
+                       backgroundColor: Colors.green[50],
+                       child: Text(contact["initials"]!, style: const TextStyle(color: Color(0xFF00AA4F))),
                     ),
-                  ),
-                  title: Text(
-                      contact["name"]!,
-                      style: ExperimentStyles.contactName // <--- EXPERIMENT HERE
-                  ),
-                  subtitle: Text(
-                      contact["number"]!,
-                      style: ExperimentStyles.contactNumber // <--- EXPERIMENT HERE
-                  ),
-                  trailing: const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 14),
-                  onTap: () => _goToAmountScreen(contact),
-                );
+                    title: Text(contact["name"]!, style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: Text(contact["number"]!),
+                    trailing: const Icon(Icons.send, color: Color(0xFF00AA4F)),
+                    onTap: () => _goToAmountScreen(contact), // CLICKABLE LIST ITEM
+                  );
+                }
+                return Container();
               },
             ),
           ),

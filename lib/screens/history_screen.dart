@@ -4,9 +4,6 @@ import '../models/transaction_model.dart';
 import '../data/dummy_transactions.dart';
 
 class HistoryScreen extends StatefulWidget {
-  // FIXED: Added const constructor here
-  const HistoryScreen({super.key});
-
   @override
   _HistoryScreenState createState() => _HistoryScreenState();
 }
@@ -29,7 +26,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
 
     return Scaffold(
-      backgroundColor: Color(0xFFF2F3F5),
+      backgroundColor: Color(0xFFF2F3F5), // Light grey background like real app
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -63,9 +60,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 Text(
                   "Download e-statement",
                   style: TextStyle(
-                      color: Colors.black87,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500
+                    color: Colors.black87,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500
                   ),
                 ),
               ],
@@ -83,7 +80,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Date Header
+                    // Date Header (e.g., 26 November 2025)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       child: Row(
@@ -95,7 +92,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                                 color: Colors.grey[700],
                                 fontWeight: FontWeight.w500),
                           ),
-                          if (index == 0)
+                          if (index == 0) // Only show sync on first item
                             Row(
                               children: [
                                 Text(
@@ -112,10 +109,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ),
 
-                    // Transaction Cards
+                    // Transaction Cards for this Date
                     ...transactions.map((tx) => _buildTransactionCard(tx)).toList(),
 
-                    SizedBox(height: 10),
+                    SizedBox(height: 10), // Spacing between groups
                   ],
                 );
               },
@@ -151,8 +148,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           child: Icon(
             tx.type == "Money Transfer"
-                ? Icons.account_balance_wallet_outlined
-                : Icons.receipt_long_outlined,
+                ? Icons.account_balance_wallet_outlined // Wallet icon
+                : Icons.receipt_long_outlined, // Bill icon
             color: Colors.black54,
             size: 20,
           ),
@@ -167,7 +164,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 6.0),
           child: Text(
-            DateFormat('h:mm a').format(tx.dateTime),
+            DateFormat('h:mm a').format(tx.dateTime), // e.g. 5:43 PM
             style: TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ),
@@ -177,7 +174,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             Text(
               "Rs. ${tx.amount.toStringAsFixed(2)}",
               style: TextStyle(
-                color: tx.isSent ? Color(0xFFD32F2F) : Color(0xFF00C05E),
+                color: tx.isSent ? Color(0xFFD32F2F) : Color(0xFF00C05E), // Red if sent
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
