@@ -21,7 +21,7 @@ class ExperimentStyles {
   );
 
   static const TextStyle tabUnselected = TextStyle(
-    color: Colors.grey,
+    color: Colors.grey, // Reverted from Colors.black
     fontSize: 14,
     fontWeight: FontWeight.w400,
   );
@@ -31,14 +31,14 @@ class ExperimentStyles {
   // ============================================================
   static const TextStyle toggleSelected = TextStyle(
     color: Colors.white,
-    fontSize: 12,
-    fontWeight: FontWeight.w700, // Try: w600 for a softer look
+    fontSize: 13,
+    fontWeight: FontWeight.w600, // Try: w600 for a softer look
   );
 
   static const TextStyle toggleUnselected = TextStyle(
-    color: Colors.grey, // Note: Colors.grey[600] is roughly Color(0xFF757575)
-    fontSize: 12,
-    fontWeight: FontWeight.w700,
+    color: Colors.black, 
+    fontSize: 13,
+    fontWeight: FontWeight.w600,
   );
 
   // ============================================================

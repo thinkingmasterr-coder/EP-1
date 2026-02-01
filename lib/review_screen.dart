@@ -80,26 +80,29 @@ class ReviewScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Account Title", style: TextStyle(color: Colors.grey)),
-                      Text(contactName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const Text("Account Title", style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
+                      Text(contactName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Account Number", style: TextStyle(color: Colors.grey)),
-                      Text(contactNumber, style: const TextStyle(fontWeight: FontWeight.bold)),
+                      const Text("Account Number", style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
+                      Text(contactNumber, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
                     ],
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 30),
 
             // PAYMENT SUMMARY
-            const Text("Payment Summary", style: TextStyle(fontWeight: FontWeight.bold)),
+            const Padding(
+              padding: EdgeInsets.only(left: 8.0),
+              child: Text("Payment Summary", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
             const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(15),
@@ -110,9 +113,7 @@ class ReviewScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _buildSummaryRow("Transfer amount", "Rs. $amount"),
-                  const Divider(),
                   _buildSummaryRow("Fee (including tax)", "Free"),
-                  const Divider(),
                   _buildSummaryRow("Total Amount", "Rs. $amount.00", isBold: true),
                 ],
               ),
@@ -153,16 +154,25 @@ class ReviewScreen extends StatelessWidget {
 
   Widget _buildSummaryRow(String label, String value, {bool isBold = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.black87)),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              fontSize: isBold ? 18 : 14,
+              letterSpacing: -0.2,
+            ),
+          ),
           Text(
             value,
             style: TextStyle(
               fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-              fontSize: isBold ? 16 : 14,
+              fontSize: isBold ? 18 : 14,
+              letterSpacing: -0.2,
             ),
           ),
         ],

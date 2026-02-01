@@ -1,5 +1,7 @@
+// File: lib/processing_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'amount_experiments.dart';
 import '../user_data.dart';
 import 'receipt_screen.dart';
 
@@ -101,9 +103,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
     // Start the Confetti Animation
     _startConfettiFlipbook();
-
-    // REMOVED: The 4-second delay and auto-navigation is GONE.
-    // The app will now stay on this screen until you click a button.
   }
 
   // --- ANIMATION 2: CONFETTI ---
@@ -119,20 +118,18 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     });
   }
 
-  // --- NAVIGATION ACTION ---
+  // --- NAVIGATION ACTION (UPDATED) ---
   void _goToReceipt() {
-    if (mounted) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ReceiptScreen(
-            amount: widget.amount,
-            contactName: widget.contactName,
-            contactNumber: widget.contactNumber,
-          ),
-        ),
-      );
-    }
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Allows the sheet to be tall
+      backgroundColor: Colors.transparent, // Transparent for rounded corners
+      builder: (context) => ReceiptScreen(
+        amount: widget.amount,
+        contactName: widget.contactName,
+        contactNumber: widget.contactNumber,
+      ),
+    );
   }
 
   @override
@@ -210,15 +207,19 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         // 2. AMOUNT
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Rs. ",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black)
+            const Padding(
+              padding: EdgeInsets.only(top: 15.0),
+              child: Text(
+                AmountExperiments.currencySymbol,
+                style: AmountExperiments.currencyStyle,
+              ),
             ),
+            const SizedBox(width: 2),
             Text(
-                "${widget.amount}.00",
-                style: const TextStyle(fontSize: 45, fontWeight: FontWeight.bold, color: Colors.black)
+              "${widget.amount}.00",
+              style: AmountExperiments.inputAmountStyle,
             ),
           ],
         ),
@@ -282,7 +283,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             icon: Icons.share,
             text: "Share",
             onTap: () {
-              // Logic for sharing can go here later
               print("Share clicked");
             }
         ),
@@ -294,7 +294,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     );
   }
 
-  // Updated Helper Widget to handle Taps
   Widget _buildBottomAction({
     required IconData icon,
     required String text,
