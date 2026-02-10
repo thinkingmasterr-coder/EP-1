@@ -57,46 +57,42 @@ class _QrResultScreenState extends State<QrResultScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Icon(Icons.qr_code_scanner_sharp, size: 100, color: Colors.black),
-            const SizedBox(height: 16),
-            const Text(
-              'zahid general store',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              'Charsadda',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
+            Center(
+              child: Image.asset('assets/qr_code1.jpg', width: 200, height: 200),
             ),
             const SizedBox(height: 32),
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Bill Amount',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+            const Text(
+              'Bill Amount',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            TextField(
-              controller: _amountController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.green, width: 2),
-                ),
-                prefixIcon: Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: const BoxDecoration(
-                    border: Border(right: BorderSide(color: Colors.green, width: 4)),
+            Container(
+              height: 50,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    color: const Color(0xFF00AA4F),
                   ),
-                  child: const SizedBox(width: 2),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 24),
@@ -114,27 +110,33 @@ class _QrResultScreenState extends State<QrResultScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            TextField(
-              controller: _messageController,
-              maxLength: 100,
-              decoration: InputDecoration(
-                counterText: '', // Hide the default counter
-                hintText: 'Enter message here',
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(color: Colors.green, width: 2),
-                ),
-                 prefixIcon: Container(
-                  margin: const EdgeInsets.only(right: 8),
-                  decoration: const BoxDecoration(
-                    border: Border(right: BorderSide(color: Colors.green, width: 4)),
+            Container(
+              height: 50,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 4,
+                    color: const Color(0xFF00AA4F),
                   ),
-                  child: const SizedBox(width: 2),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _messageController,
+                      maxLength: 100,
+                      decoration: const InputDecoration(
+                        counterText: '',
+                        hintText: 'Enter message here',
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 32),

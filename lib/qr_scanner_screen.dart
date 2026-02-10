@@ -1,4 +1,4 @@
-
+// File: lib/qr_scanner_screen.dart
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'qr_result_screen.dart';
@@ -14,6 +14,9 @@ class _QrScannerScreenState extends State<QrScannerScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
+
+  // FIX 1: Add a flag to prevent multiple scans
+  bool _hasScanned = false;
 
   @override
   void initState() {
@@ -65,7 +68,6 @@ class _QrScannerScreenState extends State<QrScannerScreen>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: const [
-                    // Placeholder for logos
                     Text('digital bank',
                         style: TextStyle(
                             fontWeight: FontWeight.bold, color: Colors.white)),
@@ -92,10 +94,18 @@ class _QrScannerScreenState extends State<QrScannerScreen>
               children: [
                 MobileScanner(
                   onDetect: (capture) {
+                    // FIX 2: Check if we have already scanned
+                    if (_hasScanned) return;
+
                     final List<Barcode> barcodes = capture.barcodes;
                     if (barcodes.isNotEmpty) {
                       final String? qrCode = barcodes.first.rawValue;
                       if (qrCode != null) {
+                        // FIX 3: Lock the scanner immediately
+                        setState(() {
+                          _hasScanned = true;
+                        });
+
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
@@ -106,7 +116,6 @@ class _QrScannerScreenState extends State<QrScannerScreen>
                     }
                   },
                 ),
-                // This is a simplified scanner overlay.
                 Container(
                   width: 250,
                   height: 250,
@@ -154,16 +163,26 @@ class _QrScannerScreenState extends State<QrScannerScreen>
         ],
       ),
       bottomNavigationBar: BottomAppBar(
-        child: Container(
-          height: 80,
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        color: Colors.black,
+        elevation: 0,
+        child: SizedBox(
+          height: 160,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              _buildBottomNavItem(Icons.receipt, 'Enter Till\nNumber'),
-              _buildBottomNavItem(Icons.image, 'Scan from\nGallery'),
-              _buildBottomNavItem(Icons.receipt_long, 'Refund\nManagement'),
-              _buildBottomNavItem(Icons.more_horiz, 'More'),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildBottomNavItem(Icons.receipt, 'Enter Till\nNumber'),
+                    _buildBottomNavItem(Icons.image, 'Scan from\nGallery'),
+                    _buildBottomNavItem(Icons.receipt_long, 'Refund\nManagement'),
+                    _buildBottomNavItem(Icons.more_horiz, 'More'),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -175,11 +194,11 @@ class _QrScannerScreenState extends State<QrScannerScreen>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.black54),
+        Icon(icon, color: Colors.white),
         Text(
           label,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12, color: Colors.black54),
+          style: const TextStyle(fontSize: 12, color: Colors.white),
         ),
       ],
     );

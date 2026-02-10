@@ -25,7 +25,7 @@ class ReviewScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Transaction Review", style: TextStyle(color: Colors.black, fontSize: 16)),
+        title: const Text("easypaisa Transfer", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: Padding(
@@ -41,19 +41,24 @@ class ReviewScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black12, width: 1),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.account_balance_wallet, color: Color(0xFF00AA4F)),
+                  Image.asset(
+                    'assets/wallet_ik.png',
+                    width: 41,
+                    height: 41,
+                  ),
                   const SizedBox(width: 15),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("easypaisa Account", style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text("easypaisa Account"),
                       ValueListenableBuilder<double>(
                         valueListenable: UserData.balance,
                         builder: (context, value, child) {
-                          return Text("Balance Rs. ${value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.grey, fontSize: 12));
+                          return Text("Balance Rs. ${value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold));
                         },
                       ),
                     ],
@@ -73,6 +78,7 @@ class ReviewScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black12, width: 1),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -109,12 +115,66 @@ class ReviewScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black12, width: 1),
               ),
               child: Column(
                 children: [
                   _buildSummaryRow("Transfer amount", "Rs. $amount"),
                   _buildSummaryRow("Fee (including tax)", "Free"),
                   _buildSummaryRow("Total Amount", "Rs. $amount.00", isBold: true),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            // FAVORITE CONTACT
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.black12, width: 1),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFF00AA4F), width: 2),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Favorite Contact",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: const Text(
+                            "Add the recipent as a favourite for easy payments in the future.",
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -5,7 +5,7 @@ class AmountExperiments {
   // ============================================================
   // 1. TOP HEADER SECTION (The Light Green Area)
   // ============================================================
-  static const Color headerBgColor = Color(0xFFFBFEFB); // An even more faded green
+  static const Color headerBgColor = Color(0xFFF0F9F0); // An even more faded green
 
   static const TextStyle headerTitle = TextStyle(
     color: Colors.black,

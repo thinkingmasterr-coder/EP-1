@@ -1,7 +1,14 @@
 // File: lib/receipt_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:math';
 import 'main.dart';
+// -------------------------------------------------------------------------
+// NOTE: You MUST add 'google_fonts' to your pubspec.yaml for the 'a' change.
+// dependencies:
+//   google_fonts: ^6.1.0
+// -------------------------------------------------------------------------
+import 'package:google_fonts/google_fonts.dart';
 
 class ReceiptScreen extends StatefulWidget {
   final String amount;
@@ -43,162 +50,329 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF3A3A48), // Dark background
-      body: SafeArea(
-        child: Center(
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 1.0, end: 0.0), // Animates from Offset(0,1) to (0,0)
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeOutBack, // Adds a slight bounce effect
-            builder: (context, value, child) {
-              return Transform.translate(
-                offset: Offset(0, value * MediaQuery.of(context).size.height), // Slide up from bottom
-                child: child,
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.85, // Prevents overflow on small screens
-                ),
-                child: ClipPath(
-                  clipper: ReceiptClipper(),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // HEADER (Fixed, doesn't scroll)
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                          child: Align(
-                            alignment: Alignment.centerRight,
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.pushAndRemoveUntil(
-                                  context,
-                                  MaterialPageRoute(builder: (context) => const EasypaisaApp()),
-                                      (route) => false,
-                                );
-                              },
-                              child: const Icon(Icons.close, color: Colors.black54, size: 24),
-                            ),
-                          ),
-                        ),
+    // Get screen dimensions
+    final screenHeight = MediaQuery.of(context).size.height;
 
-                        // SCROLLABLE CONTENT
-                        Flexible(
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                            child: Column(
+    // ===============================================================
+    // --- MANUAL CONTROLS FOR RECEIPT ---
+    // ===============================================================
+
+    // [CONTROL 0] COLORS
+    const Color headingColor = Color(0xFF505050);
+
+    // [CONTROL 1 & 2] HEADER TEXT POSITION
+    const double headerTextVerticalShift = -22.0;
+    const double headerTextHorizontalShift = 0.0;
+
+    // [CONTROL 3] HEADER SPACING
+    const double spaceBetweenTickAndText = 0.0;
+    const double spaceBetweenTextLines = 0.0;
+
+    // [CONTROL 4] GENERAL FONT SIZES
+    const double headingFontSize = 16.0;
+    const double subTextFontSize = 15.0;
+
+    // [CONTROL 5] SENT BY NUMBER ADJUSTMENT
+    const double sentByNumberTopPadding = 0.0;
+
+    // [CONTROL 6] AMOUNT SECTION VERTICAL SHIFT
+    const double spaceBeforeAmountField = 4.0;
+
+    // [CONTROL 7] FEE / CHARGE VERTICAL SHIFT
+    const double gapBeforeFeeField = 4.0;
+
+    // [CONTROL 8] TOTAL SECTION
+    const double totalLabelFontSize = 16.0;
+    const double totalSectionVerticalShift = -10.0;
+
+    // [CONTROL 9] FOOTER ICONS
+    const double footerIconScale = 0.85;
+
+    // [CONTROL 10] GREEN DOT POSITION
+    const double greenDotX = 30.5;
+    const double greenDotY = -8.8;
+
+    // [CONTROL 11] GREEN DOT SIZE
+    const double greenDotSize = 5.5;
+
+    // [CONTROL 12] WALLET IMAGE SIZE
+    // Adjust this if the image looks too big or small compared to the text
+    const double walletImageSize = 30.0;
+
+    // ---------------------------------------------------------------
+    const double receiptHeightFactor = 0.90;
+    const double receiptBottomOffset = 20.0;
+    const double receiptHorizontalMargin = 13.0;
+    const double tickMarkContainerSize = 35.0;
+    const double tickIconSize = 25.0;
+    const double easypaisaFontSize = 25.0;
+    const double transactionSuccessfulFontSize = 26.0;
+    const double headingSubTextSpacing = 0.5;
+    const double subTextLetterSpacing = -0.6;
+    // ===============================================================
+
+    final double calculatedHeight = screenHeight * receiptHeightFactor;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+      ),
+      child: Container(
+        color: Colors.black,
+        child: SafeArea(
+          child: Scaffold(
+            backgroundColor: const Color(0xFF3A3A48), // Dark background
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 1.0, end: 0.0),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOutBack,
+                builder: (context, value, child) {
+                  return Transform.translate(
+                    offset: Offset(0, value * screenHeight),
+                    child: child,
+                  );
+                },
+                child: Container(
+                  height: calculatedHeight,
+                  width: double.infinity,
+                  margin: EdgeInsets.only(
+                    bottom: receiptBottomOffset,
+                    left: receiptHorizontalMargin,
+                    right: receiptHorizontalMargin,
+                  ),
+                  child: ClipPath(
+                    clipper: ReceiptClipper(),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                      ),
+                      child: Column(
+                        children: [
+                          // --- HEADER (Gray Section) ---
+                          Container(
+                            width: double.infinity,
+                            color: const Color(0xFFF8F8F8),
+                            padding: const EdgeInsets.fromLTRB(20, 38, 20, 0),
+                            child: Stack(
                               children: [
-                                // --- LOGO & SUCCESS ---
-                                Container(
-                                  height: 60,
-                                  width: 60,
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF00C853), // Vivid Green
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.check, color: Colors.white, size: 40),
-                                ),
-                                const SizedBox(height: 15),
-
-                                // Logo Placeholder
-                                const Text("easypaisa", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, letterSpacing: -1)),
-
-                                const SizedBox(height: 10),
-                                const Text(
-                                  "Transaction Successful",
-                                  style: TextStyle(
-                                      color: Color(0xFF00C853),
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 5),
-                                const Text(
-                                  "Money has been sent",
-                                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                                ),
-
-                                const SizedBox(height: 25),
-
-                                // --- METADATA ---
+                                // 1. The Main Content (Centered)
                                 Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(_displayDate, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                                      const SizedBox(height: 4),
-                                      Text(_transactionID, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                                    ],
+                                  alignment: Alignment.center,
+                                  child: Transform.translate(
+                                    offset: const Offset(headerTextHorizontalShift, headerTextVerticalShift),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          height: tickMarkContainerSize,
+                                          width: tickMarkContainerSize,
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF00C853),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(Icons.check, color: Colors.white, size: tickIconSize),
+                                        ),
+                                        SizedBox(height: spaceBetweenTickAndText),
+
+                                        // --- EASYPAISA LOGO TEXT WITH GREEN DOT TRICK ---
+                                        Stack(
+                                          alignment: Alignment.center,
+                                          clipBehavior: Clip.none,
+                                          children: [
+                                            Text(
+                                              "easypaisa",
+                                              style: GoogleFonts.poppins(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: easypaisaFontSize,
+                                                letterSpacing: -1,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            Transform.translate(
+                                              offset: const Offset(greenDotX, greenDotY),
+                                              child: Container(
+                                                height: greenDotSize,
+                                                width: greenDotSize,
+                                                decoration: const BoxDecoration(
+                                                  color: Color(0xFF00C853),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+
+                                        SizedBox(height: spaceBetweenTextLines),
+
+                                        Text(
+                                          "Transaction Successful",
+                                          style: TextStyle(
+                                              color: const Color(0xFF00C853),
+                                              fontSize: transactionSuccessfulFontSize,
+                                              fontWeight: FontWeight.bold
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+
+                                        SizedBox(height: spaceBetweenTextLines),
+
+                                        Transform.translate(
+                                          offset: const Offset(0.0, -4.0),
+                                          child: const Text(
+                                            "Money has been sent",
+                                            style: TextStyle(color: Colors.black54, fontSize: 11),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
 
-                                const SizedBox(height: 20),
-
-                                // --- DETAILS LIST ---
-                                Row(
-                                  children: [
-                                    const Icon(Icons.account_balance_wallet_outlined, color: Colors.grey, size: 20),
-                                    const SizedBox(width: 8),
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: const [
-                                        Text("Funding Source", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
-                                        SizedBox(height: 2),
-                                        Text("easypaisa Account", style: TextStyle(color: Colors.black, fontSize: 14)),
-                                      ],
-                                    )
-                                  ],
+                                // 2. The Close Button (Top Right Overlay)
+                                Positioned(
+                                  right: 0,
+                                  top: 0,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      Navigator.pushAndRemoveUntil(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const EasypaisaApp()),
+                                            (route) => false,
+                                      );
+                                    },
+                                    child: const Icon(Icons.close, color: Colors.black54, size: 24),
+                                  ),
                                 ),
-
-                                const SizedBox(height: 15),
-
-                                _buildCleanField("Sent to", widget.contactName, subValue: widget.contactNumber),
-                                _buildCleanField("Account Details", "Shahana Amaan"),
-                                _buildCleanField("Sent by", "FATIMA SHAH", subValue: "03025529918"),
-                                _buildCleanField("Amount", widget.amount),
-                                _buildCleanField("Fee / Charge", "No Charge"),
-
-                                const SizedBox(height: 10),
-
-                                // Total Section
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text("Total Amount", style: TextStyle(color: Color(0xFF00C853), fontSize: 16, fontWeight: FontWeight.bold)),
-                                    Text("Rs. ${widget.amount}.00", style: const TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.normal)),
-                                  ],
-                                ),
-
-                                const SizedBox(height: 20),
                               ],
                             ),
                           ),
-                        ),
 
-                        // FOOTER (Fixed at bottom of receipt card)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 40, left: 20, right: 20, top: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildActionItem(Icons.share_outlined, "Share"),
-                              _buildActionItem(Icons.image_outlined, "Save to Gallery"),
-                              _buildActionItem(Icons.picture_as_pdf_outlined, "Save as PDF"),
-                            ],
+                          // --- BODY (White Section) ---
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Metadata
+                                  const SizedBox(height: 1),
+                                  Text(_displayDate, style: const TextStyle(color: Colors.black54, fontSize: 11)),
+                                  const SizedBox(height: 0),
+                                  Transform.translate(
+                                      offset: const Offset(0, -2.0),
+                                      child: Text(_transactionID, style: const TextStyle(color: Colors.black54, fontSize: 11))
+                                  ),
+
+                                  const Spacer(flex: 2), // Flexible Space
+
+                                  // Funding Source
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Transform.translate(
+                                        offset: const Offset(0, 2.0),
+                                        child: Text("Funding Source", style: TextStyle(color: headingColor, fontSize: headingFontSize, fontWeight: FontWeight.bold)),
+                                      ),
+                                      SizedBox(height: headingSubTextSpacing),
+                                      Row(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        children: [
+                                          // --- REPLACED ICON WITH ASSET IMAGE ---
+                                          Image.asset(
+                                            'assets/wallet_ik.png',
+                                            width: walletImageSize,
+                                            height: walletImageSize,
+                                            fit: BoxFit.contain,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text("easypaisa Account", style: TextStyle(color: Colors.black54, fontSize: subTextFontSize, letterSpacing: subTextLetterSpacing)),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+
+                                  const Spacer(flex: 3), // Flexible Space
+
+                                  // Fields
+                                  _buildCleanField("Sent to", widget.contactName, subValue: widget.contactNumber, headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing),
+                                  const SizedBox(height: 10),
+                                  _buildCleanField("Account Details", "Shahana Amaan", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing),
+                                  const SizedBox(height: 10),
+
+                                  // SENT BY FIELD
+                                  _buildCleanField(
+                                      "Sent by",
+                                      "FATIMA SHAH",
+                                      subValue: "03025529918",
+                                      subValueTopPadding: sentByNumberTopPadding,
+                                      headingColor: headingColor,
+                                      headingFontSize: headingFontSize,
+                                      subTextFontSize: subTextFontSize,
+                                      headingSubTextSpacing: headingSubTextSpacing,
+                                      subTextLetterSpacing: subTextLetterSpacing
+                                  ),
+
+                                  SizedBox(height: spaceBeforeAmountField),
+
+                                  _buildCleanField("Amount", "${widget.amount}.00", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing),
+
+                                  SizedBox(height: gapBeforeFeeField),
+
+                                  _buildCleanField("Fee / Charge", "No Charge", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing),
+
+                                  const Spacer(flex: 4), // Flexible Space
+
+                                  // Total Section
+                                  Transform.translate(
+                                    offset: Offset(0, totalSectionVerticalShift),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start, // Stacked on Left
+                                      children: [
+                                        Text(
+                                            "Total Amount",
+                                            style: TextStyle(
+                                                color: const Color(0xFF00C853),
+                                                fontSize: totalLabelFontSize,
+                                                fontWeight: FontWeight.bold
+                                            )
+                                        ),
+                                        const SizedBox(height: 2), // Small gap between label and amount
+                                        Text(
+                                            "Rs. ${widget.amount}.00",
+                                            style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.normal
+                                            )
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  const Spacer(flex: 5), // Flexible Space
+
+                                  // Footer Icons
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 5.0),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      children: [
+                                        _buildActionItem(Icons.share_outlined, "Share", scale: footerIconScale),
+                                        const SizedBox(width: 25),
+                                        _buildActionItem(Icons.image_outlined, "Save to Gallery", scale: footerIconScale),
+                                        const SizedBox(width: 25),
+                                        _buildActionItem(Icons.picture_as_pdf_outlined, "Save as PDF", scale: footerIconScale),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -210,34 +384,38 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     );
   }
 
-  Widget _buildCleanField(String label, String value, {String? subValue}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 2),
-                Text(value, style: const TextStyle(color: Colors.black, fontSize: 15)),
-                if (subValue != null)
-                  Text(subValue, style: const TextStyle(color: Colors.black, fontSize: 15)),
-              ],
-            ),
+  Widget _buildCleanField(String label, String value, {String? subValue, double subValueTopPadding = 2.0, required Color headingColor, required double headingFontSize, required double subTextFontSize, required double headingSubTextSpacing, required double subTextLetterSpacing}) {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(color: headingColor, fontSize: headingFontSize, fontWeight: FontWeight.bold)),
+              SizedBox(height: headingSubTextSpacing),
+              Transform.translate(
+                offset: Offset(0.0, (label == "Fee / Charge") ? -4.0 : 0.0),
+                child: Text(value, style: TextStyle(color: Colors.black54, fontSize: subTextFontSize, letterSpacing: subTextLetterSpacing)),
+              ),
+              if (subValue != null)
+                Padding(
+                  padding: EdgeInsets.only(top: subValueTopPadding),
+                  child: Text(subValue, style: TextStyle(color: Colors.black54, fontSize: subTextFontSize, letterSpacing: subTextLetterSpacing)),
+                ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildActionItem(IconData icon, String label) {
+  Widget _buildActionItem(IconData icon, String label, {double scale = 1.0}) {
+    // Applying scale to both icon and text
     return Column(
       children: [
-        Icon(icon, color: Colors.black54, size: 24),
-        const SizedBox(height: 5),
-        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+        Icon(icon, color: Colors.black54, size: 22 * scale),
+        SizedBox(height: 6 * scale),
+        Text(label, style: TextStyle(fontSize: 10 * scale, color: Colors.grey)),
       ],
     );
   }

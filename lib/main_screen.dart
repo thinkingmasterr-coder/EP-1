@@ -1,5 +1,6 @@
 // File: lib/main_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // [ADDED] For SystemUiOverlayStyle
 import 'package:intl/intl.dart';
 import 'send_menu.dart';
 import 'screens/my_account_screen.dart';
@@ -25,13 +26,13 @@ class _MainScreenState extends State<MainScreen> {
     // ==========================================================
     // ALIGNMENT CONTROLS (LOCKED)
     // ==========================================================
-    double yOffset = -4.0;
+    double yOffset = 0.0;
     double settingsButtonTop = 30.0;
     double sendMoneyButtonTop = 255.0;
 
     // LOCKED COORDINATES FOR BALANCE OVERLAY
-    double balanceTop = 185.0;
-    double balanceLeft = 30.0;
+    double balanceTop = 168.0;
+    double balanceLeft = 35.0;
     double balanceWidth = 180.0;
     double balanceHeight = 30.0;
 
@@ -40,141 +41,144 @@ class _MainScreenState extends State<MainScreen> {
     double editorLeft = 250.0;
     // ==========================================================
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
-      body: Stack(
-        children: [
-          // 1. Background Screenshot
-          Positioned(
-            top: yOffset,
-            left: 0,
-            right: 0,
-            child: Image.asset(
-              'assets/home_bg.png',
-              fit: BoxFit.fitWidth,
-              alignment: Alignment.topCenter,
-            ),
-          ),
-
-          // 2. Settings Button
-          _buildInvisibleButton(
-            top: settingsButtonTop,
-            left: 5,
-            width: 60,
-            height: 60,
-            label: "Settings",
-            onTap: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const MyAccountScreen())
-              );
-            },
-          ),
-
-          // 3. Send Money Button
-          _buildInvisibleButton(
-            top: sendMoneyButtonTop,
-            left: 1,
-            width: 150,
-            height: 100,
-            label: "Send Money",
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => const SendMenu(),
-              );
-            },
-          ),
-
-          // 4. THE BALANCE OVERLAY (Gradient Correction)
-          Positioned(
-            top: balanceTop,
-            left: balanceLeft,
-            width: balanceWidth,
-            height: balanceHeight,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    // LEFT SIDE: LOCKED (Your Perfect Match)
-                    Color(0xFF006E59),
-
-                    // RIGHT SIDE: Trying LIGHTER values now
-                    // ----------------------------------------------------
-                    // Option A: Slightly LIGHTER (Try this first)
-                    Color(0xFF006E59),
-
-                    // Option B: Even LIGHTER (If A is still too dark)
-                    // Color(0xFF007656),
-
-                    // Option C: Lighter & Less Blue (Warmer)
-                    // Color(0xFF007250),
-                    // ----------------------------------------------------
-                  ],
+    // [ADDED] Wrap with AnnotatedRegion -> Container(Black) -> SafeArea -> Scaffold
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+      ),
+      child: Container(
+        color: Colors.black, // This creates the black background behind the status bar
+        child: SafeArea(
+          child: Scaffold(
+            backgroundColor: const Color(0xFFF3F4F6),
+            body: Stack(
+              children: [
+                // 1. Background Screenshot
+                Positioned(
+                  top: yOffset,
+                  left: 0,
+                  right: 0,
+                  child: Image.asset(
+                    'assets/home_bg.jpg',
+                    fit: BoxFit.fitWidth,
+                    alignment: Alignment.topCenter,
+                  ),
                 ),
-              ),
 
-              alignment: Alignment.centerLeft,
-              padding: const EdgeInsets.only(left: 0),
+                // 2. Settings Button
+                _buildInvisibleButton(
+                  top: settingsButtonTop,
+                  left: 5,
+                  width: 60,
+                  height: 60,
+                  label: "Settings",
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const MyAccountScreen())
+                    );
+                  },
+                ),
 
-              child: ValueListenableBuilder<double>(
-                valueListenable: UserData.balance,
-                builder: (context, value, child) {
-                  return Row(
-                    children: [
-                      // The Balance Text
-                      Text(
-                        isBalanceVisible
-                            ? "Rs. ${NumberFormat('#,##0.00').format(value)}"
-                            : "Rs. ****",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+                // 3. Send Money Button
+                _buildInvisibleButton(
+                  top: sendMoneyButtonTop,
+                  left: 1,
+                  width: 150,
+                  height: 100,
+                  label: "Send Money",
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (context) => const SendMenu(),
+                    );
+                  },
+                ),
+
+                // 4. THE BALANCE OVERLAY (Gradient Correction)
+                Positioned(
+                  top: balanceTop,
+                  left: balanceLeft,
+                  width: balanceWidth,
+                  height: balanceHeight,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          // LEFT SIDE: LOCKED (Your Perfect Match)
+                          Color(0xFF006E59),
+
+                          // RIGHT SIDE:
+                          Color(0xFF006E59),
+                        ],
                       ),
+                    ),
 
-                      const SizedBox(width: 10),
+                    alignment: Alignment.centerLeft,
+                    padding: const EdgeInsets.only(left: 0),
 
-                      // The Eye Icon
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isBalanceVisible = !isBalanceVisible;
-                          });
-                        },
-                        child: Icon(
-                          isBalanceVisible ? Icons.visibility : Icons.visibility_off,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+                    child: ValueListenableBuilder<double>(
+                      valueListenable: UserData.balance,
+                      builder: (context, value, child) {
+                        return Row(
+                          children: [
+                            // The Balance Text
+                            Text(
+                              isBalanceVisible
+                                  ? "Rs. ${NumberFormat('#,##0.00').format(value)}"
+                                  : "Rs. ****",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+
+                            const SizedBox(width: 10),
+
+                            // The Eye Icon
+                            GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  isBalanceVisible = !isBalanceVisible;
+                                });
+                              },
+                              child: Icon(
+                                isBalanceVisible ? Icons.visibility : Icons.visibility_off,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+
+                // 5. Hidden "Balance Editor" Button
+                _buildInvisibleButton(
+                  top: editorTop,
+                  left: editorLeft,
+                  width: 100,
+                  height: 50,
+                  label: "Edit Balance",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const BalanceEditorScreen()),
+                    );
+                  },
+                ),
+              ],
             ),
           ),
-
-          // 5. Hidden "Balance Editor" Button
-          _buildInvisibleButton(
-            top: editorTop,
-            left: editorLeft,
-            width: 100,
-            height: 50,
-            label: "Edit Balance",
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const BalanceEditorScreen()),
-              );
-            },
-          ),
-        ],
+        ),
       ),
     );
   }

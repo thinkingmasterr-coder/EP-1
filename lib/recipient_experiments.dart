@@ -41,7 +41,7 @@ class RecipientExperiments {
   // Use this to nudge text UP or DOWN if it looks misaligned
   static const EdgeInsets inputContentPadding = EdgeInsets.only(
       left: 4,
-      bottom: 2  // <--- Tweak this number to move text vertically
+      top: 4  // <--- Tweak this number to move text vertically
   );
 
   // ============================================================
@@ -54,7 +54,7 @@ class RecipientExperiments {
   // Smaller vertical padding = thinner bar (closer to text height).
   static const EdgeInsets headerPadding = EdgeInsets.symmetric(
       horizontal: 20,
-      vertical: 4  // <--- REDUCED this to make the bar thinner
+      vertical: 2  // <--- REDUCED this to make the bar thinner
   );
 
   static const TextStyle headerText = TextStyle(

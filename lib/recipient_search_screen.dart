@@ -37,6 +37,9 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
       return number.contains(query) || name.contains(query);
     }).toList();
 
+    // Sort contacts by name (A-Z)
+    filteredContacts.sort((a, b) => a['name']!.toLowerCase().compareTo(b['name']!.toLowerCase()));
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(

@@ -118,7 +118,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     });
   }
 
-  // --- NAVIGATION ACTION (UPDATED) ---
+  // --- NAVIGATION ACTION ---
   void _goToReceipt() {
     showModalBottomSheet(
       context: context,
@@ -204,28 +204,45 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           ),
         ),
 
-        // 2. AMOUNT
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 15.0),
-              child: Text(
-                AmountExperiments.currencySymbol,
-                style: AmountExperiments.currencyStyle,
+        // 2. AMOUNT (Fixed: Replaced Crashing TextField with Text)
+        Align(
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // YOUR CHANGE: specific padding for RS
+              Padding(
+                padding: const EdgeInsets.only(top: 1.0, left: 0),
+                child: const Text(
+                    AmountExperiments.currencySymbol,
+                    style: AmountExperiments.currencyStyle
+                ),
               ),
-            ),
-            const SizedBox(width: 2),
-            Text(
-              "${widget.amount}.00",
-              style: AmountExperiments.inputAmountStyle,
-            ),
-          ],
+              const SizedBox(width: 2),
+
+              // FIXED: Replaced IntrinsicWidth+TextField with simple Text to prevent crash
+              Text(
+                widget.amount,
+                textAlign: TextAlign.center,
+                style: AmountExperiments.inputAmountStyle,
+              ),
+
+              // YOUR CHANGE: .00 text with specific padding
+              const Padding(
+                padding: EdgeInsets.only(top: 17.0, left: 0.0),
+                child: Text(
+                  '.00',
+                  style: AmountExperiments.currencyStyle,
+                ),
+              ),
+            ],
+          ),
         ),
 
         const SizedBox(height: 5),
-        const Text("Successfully Sent to", style: TextStyle(color: Colors.black54, fontSize: 16)),
+        // YOUR CHANGE: Color changed to black
+        const Text("Successfully Sent to", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500,)),
 
         const SizedBox(height: 30),
 
@@ -235,13 +252,15 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           height: 80,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.grey.shade300, width: 1),
+            // YOUR CHANGE: Green border
+            border: Border.all(color: const Color(0xFF00AA4F), width: 1.5),
             color: Colors.white,
           ),
           alignment: Alignment.center,
           child: Text(
             widget.contactName.isNotEmpty ? widget.contactName[0].toUpperCase() : "U",
-            style: const TextStyle(fontSize: 32, color: Color(0xFF00AA4F), fontWeight: FontWeight.bold),
+            // YOUR CHANGE: Black text color
+            style: const TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w400),
           ),
         ),
 
@@ -250,7 +269,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         // 4. NAME & NUMBER
         Text(
           widget.contactName,
-          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black),
         ),
 
         const SizedBox(height: 5),
@@ -260,16 +279,15 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           children: [
             const Icon(Icons.wallet, size: 16, color: Color(0xFF00AA4F)),
             const SizedBox(width: 5),
-            Text(widget.contactNumber, style: const TextStyle(color: Colors.black54, fontSize: 16)),
+            Text(widget.contactNumber, style: const TextStyle(color: Colors.black, fontSize: 16)),
           ],
         ),
 
-        const Spacer(),
+        const SizedBox(height: 40),
 
         // 5. BOTTOM ACTIONS
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
 
-        // VIEW RECEIPT -> Triggers Navigation
         _buildBottomAction(
             icon: Icons.receipt_long,
             text: "View Receipt",
@@ -278,7 +296,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
 
-        // SHARE -> Placeholder
         _buildBottomAction(
             icon: Icons.share,
             text: "Share",
@@ -288,6 +305,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         ),
 
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
+
+        const Spacer(),
 
         const SizedBox(height: 20),
       ],
