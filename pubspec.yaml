@@ -12,6 +12,8 @@ dependencies:
   cupertino_icons: ^1.0.6
   confetti: ^0.7.0    # For the animation
   intl: ^0.19.0       # For the DateFormat in HistoryScreen
+  mobile_scanner: ^5.1.0
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -23,8 +25,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - assets/
     - assets/frames/
     - assets/confetti_frames/
-    - assets/home_bg.png
+    - assets/home_bg.jpg
     - assets/send_menu_bg.png
-    - assets/settings_bg.jpg  # Add this line
+    - assets/settings_bg.jpg
+    - assets/ep_cl.webp
+    - assets/wallet_ik.png
