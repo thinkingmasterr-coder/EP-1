@@ -1,28 +1,27 @@
-// File: lib/processing_screen.dart
+// File: lib/qr_processing_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:audioplayers/audioplayers.dart';
-import 'amount_experiments.dart';
+import 'package:audioplayers/audioplayers.dart'; // <--- IMPORT THIS
 import 'user_data.dart';
-import 'receipt_screen.dart';
+import 'qr_receipt_screen.dart';
 
-class ProcessingScreen extends StatefulWidget {
+class QrProcessingScreen extends StatefulWidget {
   final String amount;
-  final String contactName;
-  final String contactNumber;
+  final String recipientName;
+  final String recipientLocation;
 
-  const ProcessingScreen({
+  const QrProcessingScreen({
     super.key,
     required this.amount,
-    required this.contactName,
-    required this.contactNumber,
+    required this.recipientName,
+    required this.recipientLocation,
   });
 
   @override
-  State<ProcessingScreen> createState() => _ProcessingScreenState();
+  State<QrProcessingScreen> createState() => _QrProcessingScreenState();
 }
 
-class _ProcessingScreenState extends State<ProcessingScreen> {
+class _QrProcessingScreenState extends State<QrProcessingScreen> {
   // --- CONFIGURATION ---
 
   // 1. ZOOM CONTROLS
@@ -47,7 +46,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   Timer? _animTimer;
 
   // Audio Player Instance
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioPlayer _audioPlayer = AudioPlayer(); // <--- NEW PLAYER
 
   // Cache lists
   final List<ImageProvider> _cachedSendingFrames = [];
@@ -101,9 +100,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     double amountDouble = double.tryParse(widget.amount) ?? 0.0;
     UserData.deductBalance(amountDouble);
 
-    // --- FIXED AUDIO LOGIC ---
-    // Use the main _audioPlayer instance.
-    // Do NOT create a new one and do NOT dispose it here.
+    // PLAY SOUND
     try {
       await _audioPlayer.play(AssetSource('sounds/success.mp3'));
     } catch (e) {
@@ -133,22 +130,22 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
   // --- NAVIGATION ACTION ---
   void _goToReceipt() {
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => ReceiptScreen(
-        amount: widget.amount,
-        contactName: widget.contactName,
-        contactNumber: widget.contactNumber,
-      ),
+      barrierColor: Colors.black.withOpacity(0.8),
+      builder: (BuildContext context) {
+        return QrReceiptScreen(
+          amount: widget.amount,
+          storeName: widget.recipientName,
+        );
+      },
     );
   }
 
   @override
   void dispose() {
     _animTimer?.cancel();
-    _audioPlayer.dispose(); // Player is properly disposed here when screen closes
+    _audioPlayer.dispose(); // <--- DISPOSE PLAYER
     super.dispose();
   }
 
@@ -156,6 +153,17 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: _showSuccess ? AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.black),
+            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+          )
+        ],
+        automaticallyImplyLeading: false,
+      ) : null,
       body: _showSuccess
           ? _buildSuccessView()
           : _buildSendingView(),
@@ -197,17 +205,17 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   Widget _buildSuccessView() {
     return Column(
       children: [
-        const SizedBox(height: 80),
+        const SizedBox(height: 10),
 
-        // 1. SCALED & CROPPED ANIMATION
+        // 1. Confetti (Smaller & Zoomed In)
         ClipRect(
           child: Container(
-            width: 150,
-            height: 150,
+            width: 60,
+            height: 60,
             alignment: Alignment.center,
             child: _cachedConfettiFrames.isNotEmpty
                 ? Transform.scale(
-              scale: 3.0,
+              scale: successZoomScale,
               child: Image(
                 image: _cachedConfettiFrames[_currentConfettiFrame - 1],
                 fit: BoxFit.cover,
@@ -218,33 +226,35 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           ),
         ),
 
-        // 2. AMOUNT
+        const SizedBox(height: 10),
+
+        // 2. Amount Area
         Align(
           alignment: Alignment.center,
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start, // Aligns Rs to top
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 1.0, left: 0),
-                child: const Text(
-                    AmountExperiments.currencySymbol,
-                    style: AmountExperiments.currencyStyle
-                ),
+              // Rs. Exponent Style
+              const Padding(
+                padding: EdgeInsets.only(top: 2.0),
+                child: Text("Rs.", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
-              const SizedBox(width: 2),
+              const SizedBox(width: 4),
 
+              // Main Amount
               Text(
                 widget.amount,
                 textAlign: TextAlign.center,
-                style: AmountExperiments.inputAmountStyle,
+                style: const TextStyle(fontSize: 45, fontWeight: FontWeight.bold, height: 1.2),
               ),
 
+              // .00 Exponent Style
               const Padding(
-                padding: EdgeInsets.only(top: 17.0, left: 0.0),
+                padding: EdgeInsets.only(top: 20.0, left: 2.0),
                 child: Text(
                   '.00',
-                  style: AmountExperiments.currencyStyle,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -252,58 +262,43 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         ),
 
         const SizedBox(height: 5),
-        const Text("Successfully Sent to", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500,)),
+        const Text("Successfully Paid to", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500,)),
 
-        const SizedBox(height: 30),
+        // Height from your previous edit
+        const SizedBox(height: 60),
 
-        // 3. AVATAR
-        Container(
-          width: 80,
+        // 3. QR Code Image Asset
+        SizedBox(
           height: 80,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFF00AA4F), width: 1.5),
-            color: Colors.white,
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            widget.contactName.isNotEmpty ? widget.contactName[0].toUpperCase() : "U",
-            style: const TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w400),
-          ),
+          width: 80,
+          child: Image.asset('assets/qr_code1.png'),
         ),
 
         const SizedBox(height: 15),
 
-        // 4. NAME & NUMBER
+        // 4. Name (Bigger)
         Text(
-          widget.contactName,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black),
+          widget.recipientName,
+          style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
         ),
-
         const SizedBox(height: 5),
 
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.wallet, size: 16, color: Color(0xFF00AA4F)),
-            const SizedBox(width: 5),
-            Text(widget.contactNumber, style: const TextStyle(color: Colors.black, fontSize: 16)),
-          ],
+        // 5. Location (Darker)
+        Text(
+            widget.recipientLocation,
+            style: const TextStyle(color: Colors.black87, fontSize: 16)
         ),
 
         const SizedBox(height: 40),
 
-        // 5. BOTTOM ACTIONS
+        // Buttons
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
-
         _buildBottomAction(
             icon: Icons.receipt_long,
             text: "View Receipt",
             onTap: _goToReceipt
         ),
-
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
-
         _buildBottomAction(
             icon: Icons.share,
             text: "Share",
@@ -311,11 +306,9 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
               print("Share clicked");
             }
         ),
-
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
 
         const Spacer(),
-
         const SizedBox(height: 20),
       ],
     );

@@ -46,6 +46,11 @@ class UserData {
       "number": "03149007912",
       "initials": "A5",
     },
+    {
+      "name": "Noreen Akbar",
+      "number": "03440644461",
+      "initials": "NA",
+    },
   ];
 
   // 3. TOOLS

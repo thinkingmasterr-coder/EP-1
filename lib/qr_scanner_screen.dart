@@ -1,4 +1,6 @@
 // File: lib/qr_scanner_screen.dart
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'qr_result_screen.dart';
@@ -10,30 +12,38 @@ class QrScannerScreen extends StatefulWidget {
   State<QrScannerScreen> createState() => _QrScannerScreenState();
 }
 
-class _QrScannerScreenState extends State<QrScannerScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
-
-  // FIX 1: Add a flag to prevent multiple scans
+class _QrScannerScreenState extends State<QrScannerScreen> {
   bool _hasScanned = false;
+  bool _showRedLine = true;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat(reverse: true);
-
-    _animation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startFlicker();
+    });
   }
 
-  @override
-  void dispose() {
-    _animationController.dispose();
-    super.dispose();
+  void _startFlicker() async {
+    while (mounted) {
+      // 1. Keep Visible (Longer duration)
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      if (!mounted) break;
+
+      // 2. Make Invisible (Short duration)
+      setState(() {
+        _showRedLine = false;
+      });
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      if (!mounted) break;
+
+      // 3. Make Visible again
+      setState(() {
+        _showRedLine = true;
+      });
+    }
   }
 
   @override
@@ -52,138 +62,202 @@ class _QrScannerScreenState extends State<QrScannerScreen>
         backgroundColor: Colors.white,
         elevation: 0,
       ),
-      body: Column(
+      body: Stack(
         children: [
-          Container(
-            color: Colors.black,
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Column(
-              children: [
-                const Text(
-                  'Scan any of the following QR Codes',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('digital bank',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.white)),
-                    SizedBox(width: 8),
-                    Text('VISA',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.white)),
-                    SizedBox(width: 8),
-                    Text('MasterCard',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.white)),
-                    SizedBox(width: 8),
-                    Text('Raast',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, color: Colors.white)),
-                  ],
-                ),
-              ],
-            ),
+          // 1. The Camera
+          MobileScanner(
+            onDetect: (capture) {
+              if (_hasScanned) return;
+
+              final List<Barcode> barcodes = capture.barcodes;
+              if (barcodes.isNotEmpty) {
+                final String? qrCode = barcodes.first.rawValue;
+                if (qrCode != null) {
+                  setState(() {
+                    _hasScanned = true;
+                  });
+
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QrResultScreen(qrCode: qrCode),
+                    ),
+                  );
+                }
+              }
+            },
           ),
-          Expanded(
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                MobileScanner(
-                  onDetect: (capture) {
-                    // FIX 2: Check if we have already scanned
-                    if (_hasScanned) return;
 
-                    final List<Barcode> barcodes = capture.barcodes;
-                    if (barcodes.isNotEmpty) {
-                      final String? qrCode = barcodes.first.rawValue;
-                      if (qrCode != null) {
-                        // FIX 3: Lock the scanner immediately
-                        setState(() {
-                          _hasScanned = true;
-                        });
-
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => QrResultScreen(qrCode: qrCode),
-                          ),
-                        );
-                      }
-                    }
-                  },
-                ),
-                Container(
-                  width: 250,
-                  height: 250,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.green, width: 4),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                SizedBox(
-                  width: 250,
-                  height: 250,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Stack(
-                      children: [
-                        AnimatedBuilder(
-                          animation: _animation,
-                          builder: (context, child) {
-                            return Positioned(
-                              top: 250 * _animation.value - 2,
-                              left: 0,
-                              right: 0,
-                              child: Container(
-                                height: 4,
-                                decoration: BoxDecoration(
-                                    color: Colors.green,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.green.withOpacity(0.7),
-                                        blurRadius: 10,
-                                        spreadRadius: 2,
-                                      )
-                                    ]),
-                              ),
-                            );
-                          },
-                        ),
+          // 2. The Overlay UI
+          Column(
+            children: [
+              // TOP BAR
+              Container(
+                width: double.infinity,
+                color: Colors.black.withOpacity(0.8),
+                padding: const EdgeInsets.symmetric(vertical: 16.0),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Scan any of the following QR Codes',
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: const [
+                        Text('digital bank',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
+                        SizedBox(width: 8),
+                        Text('VISA',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
+                        SizedBox(width: 8),
+                        Text('MasterCard',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
+                        SizedBox(width: 8),
+                        Text('Raast',
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white)),
                       ],
                     ),
-                  ),
-                )
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomAppBar(
-        color: Colors.black,
-        elevation: 0,
-        child: SizedBox(
-          height: 160,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                  ],
+                ),
+              ),
+
+              // MIDDLE SECTION
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final double availableHeight = constraints.maxHeight;
+                    const double boxSize = 250.0;
+                    final double verticalPad = (availableHeight > boxSize)
+                        ? (availableHeight - boxSize) / 2
+                        : 0;
+
+                    return Column(
+                      children: [
+                        // Space Above Box
+                        Container(
+                            height: verticalPad,
+                            color: Colors.black.withOpacity(0.5)),
+
+                        // The Row containing the Box
+                        SizedBox(
+                          height: boxSize,
+                          child: Row(
+                            children: [
+                              // Left of Box
+                              Expanded(
+                                  child: Container(
+                                      color: Colors.black.withOpacity(0.5))),
+
+                              // THE SCANNER BOX
+                              Container(
+                                width: boxSize,
+                                height: boxSize,
+                                color: Colors.transparent,
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    // The 4 Green Corners
+                                    _buildCorner(true, true),
+                                    _buildCorner(true, false),
+                                    _buildCorner(false, true),
+                                    _buildCorner(false, false),
+
+                                    // The Flickering Red Line
+                                    AnimatedOpacity(
+                                      opacity: _showRedLine ? 1.0 : 0.0,
+                                      duration: const Duration(milliseconds: 200),
+                                      child: Container(
+                                        width: 250,
+                                        height: 2,
+                                        // FIXED: Moved color and boxShadow inside decoration
+                                        decoration: BoxDecoration(
+                                          color: Colors.red,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.red.withOpacity(0.5),
+                                              blurRadius: 10,
+                                              spreadRadius: 2,
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Right of Box
+                              Expanded(
+                                  child: Container(
+                                      color: Colors.black.withOpacity(0.5))),
+                            ],
+                          ),
+                        ),
+
+                        // Space Below Box
+                        Expanded(
+                            child: Container(
+                                color: Colors.black.withOpacity(0.5))),
+                      ],
+                    );
+                  },
+                ),
+              ),
+
+              // BOTTOM BAR
+              Container(
+                width: double.infinity,
+                color: Colors.black.withOpacity(0.8),
+                padding: const EdgeInsets.only(
+                    top: 20, bottom: 30, left: 16, right: 16),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildBottomNavItem(Icons.receipt, 'Enter Till\nNumber'),
                     _buildBottomNavItem(Icons.image, 'Scan from\nGallery'),
-                    _buildBottomNavItem(Icons.receipt_long, 'Refund\nManagement'),
+                    _buildBottomNavItem(
+                        Icons.receipt_long, 'Refund\nManagement'),
                     _buildBottomNavItem(Icons.more_horiz, 'More'),
                   ],
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCorner(bool top, bool left) {
+    const double size = 30.0;
+    const double thickness = 4.0;
+    const Color color = Colors.green;
+
+    return Positioned(
+      top: top ? 0 : null,
+      bottom: top ? null : 0,
+      left: left ? 0 : null,
+      right: left ? null : 0,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          border: Border(
+            top: top ? BorderSide(color: color, width: thickness) : BorderSide.none,
+            bottom: !top ? BorderSide(color: color, width: thickness) : BorderSide.none,
+            left: left ? BorderSide(color: color, width: thickness) : BorderSide.none,
+            right: !left ? BorderSide(color: color, width: thickness) : BorderSide.none,
           ),
         ),
       ),
@@ -195,6 +269,7 @@ class _QrScannerScreenState extends State<QrScannerScreen>
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(icon, color: Colors.white),
+        const SizedBox(height: 4),
         Text(
           label,
           textAlign: TextAlign.center,

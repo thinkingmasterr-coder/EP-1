@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:easypaisa_clone/qr_review_screen.dart';
 
 class QrResultScreen extends StatefulWidget {
   final String qrCode;
@@ -10,7 +11,8 @@ class QrResultScreen extends StatefulWidget {
 }
 
 class _QrResultScreenState extends State<QrResultScreen> {
-  final TextEditingController _amountController = TextEditingController(text: '1020');
+  // CHANGE 1: Removed text: '1020', now it starts empty
+  final TextEditingController _amountController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   int _messageLength = 0;
 
@@ -59,8 +61,22 @@ class _QrResultScreenState extends State<QrResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // CHANGE 2: Made image smaller (100x100) and added text below
             Center(
-              child: Image.asset('assets/qr_code1.jpg', width: 200, height: 200),
+              child: Column(
+                children: [
+                  Image.asset('assets/qr_code1.png', width: 150, height: 150),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'AK MOBILE CENTRE CHD',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 32),
             const Text(
@@ -145,7 +161,14 @@ class _QrResultScreenState extends State<QrResultScreen> {
               height: 50,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Implement next logic
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => QrReviewScreen(
+                        amount: _amountController.text,
+                      ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,

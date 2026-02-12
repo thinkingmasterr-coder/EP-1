@@ -1,28 +1,26 @@
-// File: lib/receipt_screen.dart
+// File: lib/qr_receipt_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
-import 'main.dart';
+import 'main.dart'; // Ensure this points to your main app file for navigation
 import 'package:google_fonts/google_fonts.dart';
 
-class ReceiptScreen extends StatefulWidget {
+class QrReceiptScreen extends StatefulWidget {
   final String amount;
-  final String contactName;
-  final String contactNumber;
+  final String storeName;
 
-  const ReceiptScreen({
+  const QrReceiptScreen({
     super.key,
     required this.amount,
-    required this.contactName,
-    required this.contactNumber,
+    required this.storeName,
   });
 
   @override
-  State<ReceiptScreen> createState() => _ReceiptScreenState();
+  State<QrReceiptScreen> createState() => _QrReceiptScreenState();
 }
 
-class _ReceiptScreenState extends State<ReceiptScreen> {
-  String get _transactionID => "ID#${Random().nextInt(90000000) + 4000000000}";
+class _QrReceiptScreenState extends State<QrReceiptScreen> {
+  String get _transactionID => "ID#${Random().nextInt(90000000) + 4300000000}";
 
   String get _displayDate {
     final now = DateTime.now();
@@ -45,41 +43,38 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get screen dimensions
     final screenHeight = MediaQuery.of(context).size.height;
 
     // ===============================================================
-    // --- MANUAL CONTROLS ---
+    // --- STYLE CONSTANTS (COPIED EXACTLY FROM RECEIPT SCREEN) ---
     // ===============================================================
     const Color headingColor = Color(0xFF505050);
 
-    // CHANGE: Changed from -22.0 to -17.0 to move header DOWN by 5 points
-    const double headerTextVerticalShift = -17.0;
-
+    const double headerTextVerticalShift = -22.0;
     const double headerTextHorizontalShift = 0.0;
     const double spaceBetweenTickAndText = 0.0;
     const double spaceBetweenTextLines = 0.0;
+
     const double headingFontSize = 16.0;
     const double subTextFontSize = 15.0;
-    const double sentByNumberTopPadding = 0.0;
+
     const double spaceBeforeAmountField = 4.0;
     const double gapBeforeFeeField = 4.0;
+
     const double totalLabelFontSize = 16.0;
     const double totalSectionVerticalShift = -10.0;
+
     const double footerIconScale = 0.85;
+
     const double greenDotX = 30.5;
     const double greenDotY = -8.8;
     const double greenDotSize = 5.5;
-    const double walletImageSize = 30.0;
-
-    // [CONTROL 13] GREEN 'e' CURVE
-    const double greenE_X = 0.0;
-    const double greenE_Y = 17.5;
-    const double greenE_Width = 12.0;
-    const double greenE_Height = 7.5;
 
     // ---------------------------------------------------------------
-    const double receiptHeightFactor = 0.90;
-    const double receiptBottomOffset = 20.0;
+    // CHANGED: Reduced height factor because QR receipt has less info
+    const double receiptHeightFactor = 0.75;
+    const double receiptBottomOffset = 130.0;
     const double receiptHorizontalMargin = 13.0;
     const double tickMarkContainerSize = 35.0;
     const double tickIconSize = 25.0;
@@ -100,7 +95,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
         color: Colors.black,
         child: SafeArea(
           child: Scaffold(
-            backgroundColor: const Color(0xFF3A3A48),
+            backgroundColor: const Color(0xFF3A3A48), // Dark background
             body: Align(
               alignment: Alignment.bottomCenter,
               child: TweenAnimationBuilder<double>(
@@ -122,21 +117,21 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                     right: receiptHorizontalMargin,
                   ),
                   child: ClipPath(
-                    clipper: ReceiptClipper(),
+                    clipper: QrReceiptClipper(), // Using the local clipper
                     child: Container(
                       decoration: const BoxDecoration(
                         color: Colors.white,
                       ),
                       child: Column(
                         children: [
-                          // --- HEADER ---
+                          // --- HEADER (Gray Section) ---
                           Container(
                             width: double.infinity,
                             color: const Color(0xFFF8F8F8),
-                            padding: const EdgeInsets.fromLTRB(20, 29, 20, 0),
+                            padding: const EdgeInsets.fromLTRB(20, 38, 20, 0),
                             child: Stack(
-                              clipBehavior: Clip.none,
                               children: [
+                                // 1. The Main Content (Centered)
                                 Align(
                                   alignment: Alignment.center,
                                   child: Transform.translate(
@@ -153,6 +148,8 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                           child: Icon(Icons.check, color: Colors.white, size: tickIconSize),
                                         ),
                                         SizedBox(height: spaceBetweenTickAndText),
+
+                                        // --- EASYPAISA LOGO TEXT ---
                                         Stack(
                                           alignment: Alignment.center,
                                           clipBehavior: Clip.none,
@@ -179,7 +176,9 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                             ),
                                           ],
                                         ),
+
                                         SizedBox(height: spaceBetweenTextLines),
+
                                         Text(
                                           "Transaction Successful",
                                           style: TextStyle(
@@ -189,11 +188,13 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                           ),
                                           textAlign: TextAlign.center,
                                         ),
+
                                         SizedBox(height: spaceBetweenTextLines),
+
                                         Transform.translate(
                                           offset: const Offset(0.0, -4.0),
                                           child: const Text(
-                                            "Money has been sent",
+                                            "Your RAAST QR payment has been made",
                                             style: TextStyle(color: Colors.black54, fontSize: 11),
                                           ),
                                         ),
@@ -201,31 +202,30 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                     ),
                                   ),
                                 ),
+
+                                // 2. The Close Button
                                 Positioned(
-                                  right: -15,
-                                  top: -15,
+                                  right: 0,
+                                  top: 0,
                                   child: GestureDetector(
                                     onTap: () {
-                                      Navigator.pushAndRemoveUntil(
-                                        context,
-                                        MaterialPageRoute(builder: (context) => const EasypaisaApp()),
-                                            (route) => false,
-                                      );
+                                      Navigator.of(context).popUntil((route) => route.isFirst);
                                     },
-                                    child: const Icon(Icons.close, color: Colors.black54, size: 20),
+                                    child: const Icon(Icons.close, color: Colors.black54, size: 24),
                                   ),
                                 ),
                               ],
                             ),
                           ),
 
-                          // --- BODY ---
+                          // --- BODY (White Section) ---
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  // Metadata
                                   const SizedBox(height: 1),
                                   Text(_displayDate, style: const TextStyle(color: Colors.black54, fontSize: 11)),
                                   const SizedBox(height: 0),
@@ -234,51 +234,27 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                       child: Text(_transactionID, style: const TextStyle(color: Colors.black54, fontSize: 11))
                                   ),
 
-                                  const Spacer(flex: 5),
-
-                                  const SizedBox(height: 12.0),
-
-                                  // Funding Source
-                                  Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Transform.translate(
-                                        offset: const Offset(0, 4.0),
-                                        child: Text("Funding Source", style: TextStyle(color: headingColor, fontSize: headingFontSize, fontWeight: FontWeight.bold)),
-                                      ),
-                                      SizedBox(height: headingSubTextSpacing),
-                                      Row(
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-                                        children: [
-                                          Image.asset(
-                                            'assets/wallet_ik.png',
-                                            width: walletImageSize,
-                                            height: walletImageSize,
-                                            fit: BoxFit.contain,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text("easypaisa Account", style: TextStyle(color: Colors.black54, fontSize: subTextFontSize, letterSpacing: subTextLetterSpacing)),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-
                                   const Spacer(flex: 3),
 
-                                  // Fields
-                                  _buildCleanField("Sent to", widget.contactName, subValue: widget.contactNumber, headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 2.0),
-
-                                  const SizedBox(height: 10),
-
-                                  _buildCleanField("Account Details", "Shahana Amaan", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 2.0),
-
-                                  const SizedBox(height: 10),
-
+                                  // FIELD 1: STORE NAME
                                   _buildCleanField(
-                                      "Sent by",
+                                      "Store Name",
+                                      widget.storeName,
+                                      headingColor: headingColor,
+                                      headingFontSize: headingFontSize,
+                                      subTextFontSize: subTextFontSize,
+                                      headingSubTextSpacing: headingSubTextSpacing,
+                                      subTextLetterSpacing: subTextLetterSpacing
+                                  ),
+
+                                  const SizedBox(height: 10),
+
+                                  // FIELD 2: PAID BY
+                                  _buildCleanField(
+                                      "Paid by",
                                       "FATIMA SHAH",
                                       subValue: "03025529918",
-                                      subValueTopPadding: sentByNumberTopPadding,
+                                      subValueTopPadding: 0.0,
                                       headingColor: headingColor,
                                       headingFontSize: headingFontSize,
                                       subTextFontSize: subTextFontSize,
@@ -288,18 +264,33 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   SizedBox(height: spaceBeforeAmountField),
 
-                                  _buildCleanField("Amount", "${widget.amount}.00", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 3.0),
+                                  // FIELD 3: AMOUNT
+                                  _buildCleanField(
+                                      "Amount",
+                                      "${widget.amount}.00",
+                                      headingColor: headingColor,
+                                      headingFontSize: headingFontSize,
+                                      subTextFontSize: subTextFontSize,
+                                      headingSubTextSpacing: headingSubTextSpacing,
+                                      subTextLetterSpacing: subTextLetterSpacing
+                                  ),
 
                                   SizedBox(height: gapBeforeFeeField),
 
-                                  Transform.translate(
-                                    offset: const Offset(0, -3.0),
-                                    child: _buildCleanField("Fee / Charge", "No Charge", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing),
+                                  // FIELD 4: FEE
+                                  _buildCleanField(
+                                      "Fee / Charge",
+                                      "No Charge",
+                                      headingColor: headingColor,
+                                      headingFontSize: headingFontSize,
+                                      subTextFontSize: subTextFontSize,
+                                      headingSubTextSpacing: headingSubTextSpacing,
+                                      subTextLetterSpacing: subTextLetterSpacing
                                   ),
 
                                   const Spacer(flex: 4),
 
-                                  // Total Section
+                                  // TOTAL SECTION
                                   Transform.translate(
                                     offset: Offset(0, totalSectionVerticalShift),
                                     child: Column(
@@ -313,33 +304,30 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                                 fontWeight: FontWeight.bold
                                             )
                                         ),
-                                        Transform.translate(
-                                          offset: const Offset(0, -1.0),
-                                          child: Text(
-                                              "Rs. ${widget.amount}.00",
-                                              style: const TextStyle(
-                                                  color: Colors.black,
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.normal
-                                              )
-                                          ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                            "Rs. ${widget.amount}.00",
+                                            style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.normal
+                                            )
                                         ),
                                       ],
                                     ),
                                   ),
 
-                                  const Spacer(flex: 2),
+                                  const Spacer(flex: 5),
 
-                                  // Footer Icons
+                                  // FOOTER ICONS (Includes Split Bill)
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 5.0),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Adjusted for 4 icons
                                       children: [
+                                        _buildActionItem(Icons.grid_on, "Split Bill", scale: footerIconScale),
                                         _buildActionItem(Icons.share_outlined, "Share", scale: footerIconScale),
-                                        const SizedBox(width: 25),
                                         _buildActionItem(Icons.image_outlined, "Save to Gallery", scale: footerIconScale),
-                                        const SizedBox(width: 25),
                                         _buildActionItem(Icons.picture_as_pdf_outlined, "Save as PDF", scale: footerIconScale),
                                       ],
                                     ),
@@ -361,17 +349,14 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     );
   }
 
-  Widget _buildCleanField(String label, String value, {String? subValue, double subValueTopPadding = 2.0, required Color headingColor, required double headingFontSize, required double subTextFontSize, required double headingSubTextSpacing, required double subTextLetterSpacing, double labelVerticalOffset = 0.0}) {
+  Widget _buildCleanField(String label, String value, {String? subValue, double subValueTopPadding = 2.0, required Color headingColor, required double headingFontSize, required double subTextFontSize, required double headingSubTextSpacing, required double subTextLetterSpacing}) {
     return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Transform.translate(
-                offset: Offset(0, labelVerticalOffset),
-                child: Text(label, style: TextStyle(color: headingColor, fontSize: headingFontSize, fontWeight: FontWeight.bold)),
-              ),
+              Text(label, style: TextStyle(color: headingColor, fontSize: headingFontSize, fontWeight: FontWeight.bold)),
               SizedBox(height: headingSubTextSpacing),
               Transform.translate(
                 offset: Offset(0.0, (label == "Fee / Charge") ? -4.0 : 0.0),
@@ -400,47 +385,25 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
   }
 }
 
-class ReceiptClipper extends CustomClipper<Path> {
+// Include the Clipper directly here to ensure it works standalone
+class QrReceiptClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = Path();
+    path.lineTo(0, size.height);
 
-    // ADJUSTABLE SETTINGS
-    double bumpWidth = 4.0;
-    double gapWidth = 5.0;
-    double toothHeight = 1.5;
-
-    // --- TOP EDGE ---
-    path.moveTo(0, toothHeight);
-
+    // Bottom Zig Zag
     double x = 0;
+    double y = size.height;
+    double increment = 10;
+
     while (x < size.width) {
-      path.relativeQuadraticBezierTo(bumpWidth / 2, -toothHeight * 2, bumpWidth, 0);
-      x += bumpWidth;
-
-      if (x >= size.width) break;
-      path.relativeLineTo(gapWidth, 0);
-      x += gapWidth;
-    }
-    path.lineTo(size.width, toothHeight);
-
-    // Right Edge
-    path.lineTo(size.width, size.height - toothHeight);
-
-    // --- BOTTOM EDGE ---
-    x = size.width;
-    while (x > 0) {
-      path.relativeQuadraticBezierTo(-bumpWidth / 2, toothHeight * 2, -bumpWidth, 0);
-      x -= bumpWidth;
-
-      if (x <= 0) break;
-      path.relativeLineTo(-gapWidth, 0);
-      x -= gapWidth;
+      x += increment;
+      y = (y == size.height) ? size.height - 8 : size.height;
+      path.lineTo(x, y);
     }
 
-    // Left Edge
-    path.lineTo(0, toothHeight);
-
+    path.lineTo(size.width, 0);
     path.close();
     return path;
   }
