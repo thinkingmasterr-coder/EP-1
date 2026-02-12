@@ -1,8 +1,7 @@
-
 // File: lib/qr_review_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'qr_processing_screen.dart'; // Import the new screen
+import 'qr_processing_screen.dart';
 
 class QrReviewScreen extends StatelessWidget {
   final String amount;
@@ -45,8 +44,10 @@ class QrReviewScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 10),
-            // CHANGED: Wrapped QR in a Stack to overlay the logo
+            // CHANGED: Added Spacer here to push everything down
+            const Spacer(),
+
+            // Wrapped QR in a Stack to overlay the logo
             Center(
               child: Stack(
                 alignment: Alignment.center,
@@ -61,9 +62,9 @@ class QrReviewScreen extends StatelessWidget {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: Colors.white, // White background to hide QR dots behind logo
+                      color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 2), // Thin black border
+                      border: Border.all(color: Colors.black, width: 2),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(4.0),
@@ -143,6 +144,8 @@ class QrReviewScreen extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 30),
+
+            // --- The "Rectangle" Section (Fee, Tax, Total) ---
             const Divider(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -150,7 +153,6 @@ class QrReviewScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Fee & Tax', style: TextStyle(fontSize: 15)),
-                  // CHANGED: Replaced Chip with Container for tighter fit
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                     decoration: BoxDecoration(
@@ -180,9 +182,12 @@ class QrReviewScreen extends StatelessWidget {
               ),
             ),
             const Divider(),
-            const Spacer(),
+            // CHANGED: Removed the Spacer() that was here.
+
             Padding(
-              padding: const EdgeInsets.only(bottom: 20.0, top: 10.0),
+              // CHANGED: Adjusted top padding to 20.0 to create the "little distance" requested.
+              // Bottom padding remains 90.0 to keep the button location fixed.
+              padding: const EdgeInsets.only(bottom: 90.0, top: 20.0),
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -190,15 +195,15 @@ class QrReviewScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => QrProcessingScreen(
                         amount: amount,
-                        recipientName: "AK MOBILE CENTER CHD", // Hardcoded for now
-                        recipientLocation: "Charsadda", // Hardcoded for now
+                        recipientName: "AK MOBILE CENTER CHD",
+                        recipientLocation: "Charsadda",
                       ),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00AA4F),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
