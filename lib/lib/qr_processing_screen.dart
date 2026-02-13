@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart'; // <--- IMPORT THIS
+import 'package:intl/intl.dart';
 import 'user_data.dart';
 import 'qr_receipt_screen.dart';
 
@@ -203,6 +204,7 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
 
   // --- VIEW 2: SUCCESS ---
   Widget _buildSuccessView() {
+    final formatCurrency = NumberFormat('#,##0');
     return Column(
       children: [
         const SizedBox(height: 10),
@@ -244,7 +246,7 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
 
               // Main Amount
               Text(
-                widget.amount,
+                formatCurrency.format(double.tryParse(widget.amount) ?? 0.0),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 45, fontWeight: FontWeight.bold, height: 1.2),
               ),
@@ -294,13 +296,13 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
         // Buttons
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
         _buildBottomAction(
-            icon: Icons.receipt_long,
+            icon: Image.asset('assets/reciept_img.png'),
             text: "View Receipt",
             onTap: _goToReceipt
         ),
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
         _buildBottomAction(
-            icon: Icons.share,
+            icon: const Icon(Icons.share, color: Colors.black54),
             text: "Share",
             onTap: () {
               print("Share clicked");
@@ -315,18 +317,20 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
   }
 
   Widget _buildBottomAction({
-    required IconData icon,
+    required Widget icon,
     required String text,
     required VoidCallback onTap
   }) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        // CHANGED: Reduced vertical padding from 16 to 4 (Thinner)
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         color: Colors.white,
         child: Row(
           children: [
-            Icon(icon, color: Colors.black54),
+            // CHANGED: Increased size from 35 to 42 (Bigger Icon/Image)
+            SizedBox(width: 42, height: 42, child: icon),
             const SizedBox(width: 15),
             Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
             const Spacer(),

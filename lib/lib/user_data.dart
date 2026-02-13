@@ -63,4 +63,9 @@ class UserData {
   static void deductBalance(double amount) {
     balance.value -= amount;
   }
+  
+  // Function to add a new contact
+  static void addContact(Map<String, String> newContact) {
+    contacts.add(newContact);
+  }
 }

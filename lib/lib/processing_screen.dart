@@ -285,8 +285,11 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.wallet, size: 16, color: Color(0xFF00AA4F)),
-            const SizedBox(width: 5),
+            // Logo Left
+            Image.asset('assets/EP_logo.webp', width: 25, height: 25),
+            // CHANGED: Reduced gap from 5 to 2 to bring it closer
+            const SizedBox(width: 2),
+            // Number
             Text(widget.contactNumber, style: const TextStyle(color: Colors.black, fontSize: 16)),
           ],
         ),
@@ -297,7 +300,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
 
         _buildBottomAction(
-            icon: Icons.receipt_long,
+            icon: Image.asset('assets/reciept_img.png'),
             text: "View Receipt",
             onTap: _goToReceipt
         ),
@@ -305,7 +308,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
 
         _buildBottomAction(
-            icon: Icons.share,
+            icon: const Icon(Icons.share, color: Colors.black54),
             text: "Share",
             onTap: () {
               print("Share clicked");
@@ -322,18 +325,20 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   }
 
   Widget _buildBottomAction({
-    required IconData icon,
+    required Widget icon,
     required String text,
     required VoidCallback onTap
   }) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        // CHANGED: Reduced vertical padding from 8 to 4 to make it much thinner
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         color: Colors.white,
         child: Row(
           children: [
-            Icon(icon, color: Colors.black54),
+            // CHANGED: Increased container size to 42 for larger icon
+            SizedBox(width: 42, height: 42, child: icon),
             const SizedBox(width: 15),
             Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
             const Spacer(),
