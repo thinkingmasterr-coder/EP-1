@@ -15,11 +15,13 @@ dependencies:
   mobile_scanner: ^5.1.0
   google_fonts: ^6.1.0
   audioplayers: ^6.0.0
+  video_player: ^2.8.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+  flutter_native_splash: ^2.3.1
 
 # PAY ATTENTION TO THE SPACES BELOW
 # In your pubspec.yaml
@@ -35,3 +37,15 @@ flutter:
     - assets/ep_cl.webp
     - assets/wallet_ik.png
     - assets/sounds/
+    - assets/splash.mp4
+
+flutter_native_splash:
+    color: "#000000"
+    image: assets/EP_logo.webp
+    fullscreen: true
+
+    android_12:
+      image: assets/EP_logo.webp
+      icon_background_color: "#000000"
+      color: "#000000"
+      fullscreen: true
