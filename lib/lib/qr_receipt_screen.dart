@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:math';
 import 'main.dart'; // Ensure this points to your main app file for navigation
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class QrReceiptScreen extends StatefulWidget {
   final String amount;
@@ -43,6 +44,10 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double amountValue = double.tryParse(widget.amount.replaceAll(',', '')) ?? 0;
+    final NumberFormat currencyFormatWithDecimals = NumberFormat("#,##0.00", "en_US");
+    final String formattedAmountWithDecimals = currencyFormatWithDecimals.format(amountValue);
+
     // Get screen dimensions
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -267,7 +272,7 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
                                   // FIELD 3: AMOUNT
                                   _buildCleanField(
                                       "Amount",
-                                      "${widget.amount}.00",
+                                      formattedAmountWithDecimals,
                                       headingColor: headingColor,
                                       headingFontSize: headingFontSize,
                                       subTextFontSize: subTextFontSize,
@@ -306,7 +311,7 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                            "Rs. ${widget.amount}.00",
+                                            "Rs. $formattedAmountWithDecimals",
                                             style: const TextStyle(
                                                 color: Colors.black,
                                                 fontSize: 18,

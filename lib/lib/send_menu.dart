@@ -6,66 +6,93 @@ import 'qr_scanner_screen.dart';
 class SendMenu extends StatelessWidget {
   const SendMenu({super.key});
 
+  // =======================================================
+  // 🔧 CONTROL PANEL
+  // =======================================================
+  static const double scaleFactor = 1.0;
+  static const double verticalAlignment = 0.5;
+  // =======================================================
+
+  // HELPER: This forces the "Pop in" effect (NO SLIDING)
+  static void show(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+        pageBuilder: (context, animation, secondaryAnimation) => const SendMenu(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Flexible(
-          child: Container(
-            width: double.infinity,
-            color: Colors.transparent,
-            child: Stack(
-              alignment: Alignment.bottomCenter,
-              children: [
-                // 1. THE SCREENSHOT BACKGROUND
-                ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: Image.asset(
-                    'assets/send_menu_bg.png',
-                    fit: BoxFit.cover,
-                  ),
-                ),
+    return Scaffold(
+      // CHANGED: 0.6 -> 0.3 (Less dark, more visible background)
+      backgroundColor: Colors.black.withOpacity(0.3),
+      body: GestureDetector(
+        onTap: () => Navigator.pop(context),
+        behavior: HitTestBehavior.opaque,
+        child: Align(
+          alignment: Alignment(0.0, verticalAlignment),
+          child: GestureDetector(
+            onTap: () {},
+            child: Transform.scale(
+              scale: scaleFactor,
+              child: SizedBox(
+                width: 340,
+                height: 400,
+                child: Stack(
+                  children: [
+                    // 1. THE BACKGROUND IMAGE
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'assets/send_menu_bg.png',
+                          width: 340,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                        ),
+                      ),
+                    ),
 
-                // 2. THE INVISIBLE BUTTON (Easypaisa Transfer)
-                Positioned(
-                  top: 50,
-                  left: 20,
-                  width: 90,
-                  height: 90,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context); // Close menu
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const TransferScreen()));
-                    },
-                    child: Container(
-                      color: Colors.transparent,
+                    // 2. INVISIBLE BUTTON (Easypaisa Transfer)
+                    Positioned(
+                      top: 40,
+                      left: 20,
+                      width: 90,
+                      height: 90,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const TransferScreen()));
+                        },
+                        child: Container(color: Colors.transparent),
+                      ),
                     ),
-                  ),
-                ),
-                
-                // 3. THE INVISIBLE BUTTON (Scan QR)
-                Positioned(
-                  top: 295,
-                  left: 30, // Positioned to the right of the first button
-                  width: 90,
-                  height: 90,
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context); // Close menu
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const QrScannerScreen()));
-                    },
-                    child: Container(
-                      color: Colors.transparent,
+
+                    // 3. INVISIBLE BUTTON (Scan QR)
+                    Positioned(
+                      top: 255,
+                      left: 30,
+                      width: 90,
+                      height: 90,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => const QrScannerScreen()));
+                        },
+                        child: Container(color: Colors.transparent),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

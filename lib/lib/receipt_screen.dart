@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:math';
 import 'main.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class ReceiptScreen extends StatefulWidget {
   final String amount;
@@ -45,6 +46,10 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final double amountValue = double.tryParse(widget.amount.replaceAll(',', '')) ?? 0;
+    final NumberFormat currencyFormatWithDecimals = NumberFormat("#,##0.00", "en_US");
+    final String formattedAmountWithDecimals = currencyFormatWithDecimals.format(amountValue);
+
     final screenHeight = MediaQuery.of(context).size.height;
 
     // ===============================================================
@@ -288,7 +293,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   SizedBox(height: spaceBeforeAmountField),
 
-                                  _buildCleanField("Amount", "${widget.amount}.00", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 3.0),
+                                  _buildCleanField("Amount", formattedAmountWithDecimals, headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 3.0),
 
                                   SizedBox(height: gapBeforeFeeField),
 
@@ -316,7 +321,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                         Transform.translate(
                                           offset: const Offset(0, -1.0),
                                           child: Text(
-                                              "Rs. ${widget.amount}.00",
+                                              "Rs. $formattedAmountWithDecimals",
                                               style: const TextStyle(
                                                   color: Colors.black,
                                                   fontSize: 18,

@@ -1,7 +1,7 @@
-// File: lib/till_processing_screen.dart
+// File: lib/lib/till_processing_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'qr_processing_screen.dart'; // We reuse the success animation screen for now
+import 'qr_processing_screen.dart';
 
 class TillProcessingScreen extends StatelessWidget {
   final String amount;
@@ -28,7 +28,6 @@ class TillProcessingScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        // 1. CHANGED: Title to "Till Payment"
         title: const Text(
           'Till Payment',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
@@ -49,19 +48,22 @@ class TillProcessingScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 10),
+            // 1. Spacer to push content down (Matches QrReviewScreen)
+            const Spacer(),
 
-            // 3. CHANGED: Empty area instead of QR Code
-            const Center(
-              child: SizedBox(
-                height: 120,
+            // 2. The Asset Image (Matches QrReviewScreen position, but uses bill_img.png)
+            Center(
+              child: Image.asset(
+                'assets/bill_img.png',
                 width: 120,
-                // Empty as requested
+                height: 120,
+                fit: BoxFit.contain,
               ),
             ),
 
             const SizedBox(height: 20),
 
+            // 3. Transaction Details (Preserved Merchant & Till Number logic)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -80,7 +82,7 @@ class TillProcessingScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // 2. CHANGED: "Merchant Name" -> "AK MOBILE CENTRE CHD"
+                  // Merchant Name
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -93,7 +95,7 @@ class TillProcessingScreen extends StatelessWidget {
 
                   const SizedBox(height: 8),
 
-                  // 2. CHANGED: "Till Number" -> Dynamic Value
+                  // Till Number (Dynamic)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -109,7 +111,7 @@ class TillProcessingScreen extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // AMOUNT DISPLAY
+            // 4. AMOUNT DISPLAY (Matches QrReviewScreen)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,6 +137,8 @@ class TillProcessingScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 30),
+
+            // 5. Fee & Tax Section (Matches QrReviewScreen)
             const Divider(),
 
             Padding(
@@ -174,11 +178,12 @@ class TillProcessingScreen extends StatelessWidget {
             ),
 
             const Divider(),
-            const Spacer(),
 
-            // PAY BUTTON
+            // 6. BUTTON POSITIONING (Matches QrReviewScreen EXACTLY)
+            // No Spacer() here anymore.
+
             Padding(
-              padding: const EdgeInsets.only(bottom: 20.0, top: 10.0),
+              padding: const EdgeInsets.only(bottom: 90.0, top: 20.0),
               child: ElevatedButton(
                 onPressed: () {
                   // Navigate to the Success Animation Screen
@@ -195,7 +200,7 @@ class TillProcessingScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00AA4F),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 10), // Reduced vertical padding to match Review Screen
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
