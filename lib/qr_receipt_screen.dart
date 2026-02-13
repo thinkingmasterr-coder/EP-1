@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:math';
 import 'main.dart'; // Ensure this points to your main app file for navigation
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
 class QrReceiptScreen extends StatefulWidget {
   final String amount;
@@ -39,6 +40,16 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
     int hour = date.hour > 12 ? date.hour - 12 : date.hour;
     String amPm = date.hour >= 12 ? "PM" : "AM";
     return "${hour}:${date.minute.toString().padLeft(2, '0')} $amPm";
+  }
+
+  String _formatAmountWithCommas(String amount) {
+    try {
+      final number = int.parse(amount);
+      final formatter = NumberFormat('#,###');
+      return formatter.format(number);
+    } catch (e) {
+      return amount;
+    }
   }
 
   @override
@@ -249,11 +260,11 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
 
                                   const SizedBox(height: 10),
 
-                                  // FIELD 2: PAID BY
+                                  // FIELD 2: PAID BY (UPDATED)
                                   _buildCleanField(
                                       "Paid by",
-                                      "FATIMA SHAH",
-                                      subValue: "03025529918",
+                                      "IFTIKHAR KHAN", // <--- UPDATED
+                                      subValue: "03125534518", // <--- UPDATED
                                       subValueTopPadding: 0.0,
                                       headingColor: headingColor,
                                       headingFontSize: headingFontSize,
@@ -267,7 +278,7 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
                                   // FIELD 3: AMOUNT
                                   _buildCleanField(
                                       "Amount",
-                                      "${widget.amount}.00",
+                                      "${_formatAmountWithCommas(widget.amount)}.00",
                                       headingColor: headingColor,
                                       headingFontSize: headingFontSize,
                                       subTextFontSize: subTextFontSize,
@@ -306,7 +317,7 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                            "Rs. ${widget.amount}.00",
+                                            "Rs. ${_formatAmountWithCommas(widget.amount)}.00",
                                             style: const TextStyle(
                                                 color: Colors.black,
                                                 fontSize: 18,

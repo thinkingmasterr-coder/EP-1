@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'qr_result_screen.dart';
+import 'till_payment_screen.dart'; // <--- Import the Till Screen
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({super.key});
@@ -179,7 +180,6 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                                       child: Container(
                                         width: 250,
                                         height: 2,
-                                        // FIXED: Moved color and boxShadow inside decoration
                                         decoration: BoxDecoration(
                                           color: Colors.red,
                                           boxShadow: [
@@ -224,7 +224,18 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildBottomNavItem(Icons.receipt, 'Enter Till\nNumber'),
+                    // [CHANGED] Using asset path for the Till Icon
+                    _buildBottomNavItem(
+                      'assets/till_icon.png', // <--- REPLACE THIS WITH YOUR IMAGE
+                      'Enter Till\nNumber',
+                      onTap: () {
+                        // Navigate to Till Payment Screen
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const TillPaymentScreen())
+                        );
+                      },
+                    ),
                     _buildBottomNavItem(Icons.image, 'Scan from\nGallery'),
                     _buildBottomNavItem(
                         Icons.receipt_long, 'Refund\nManagement'),
@@ -264,18 +275,34 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     );
   }
 
-  Widget _buildBottomNavItem(IconData icon, String label) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: Colors.white),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 12, color: Colors.white),
-        ),
-      ],
+  // [CHANGED] Now accepts dynamic iconOrAsset (IconData OR String)
+  Widget _buildBottomNavItem(dynamic iconOrAsset, String label, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // LOGIC: Check if it's an IconData or a String (Asset Path)
+          if (iconOrAsset is IconData)
+            Icon(iconOrAsset, color: Colors.white, size: 30)
+          else if (iconOrAsset is String)
+          // Render the transparent image
+            Image.asset(
+              iconOrAsset,
+              width: 30,
+              height: 30,
+              // Note: We don't set color here so the image keeps its original colors
+              fit: BoxFit.contain,
+            ),
+
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, color: Colors.white),
+          ),
+        ],
+      ),
     );
   }
 }

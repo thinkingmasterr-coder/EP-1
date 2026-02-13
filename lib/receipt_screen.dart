@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'dart:math';
 import 'main.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'user_data.dart';
 
 class ReceiptScreen extends StatefulWidget {
   final String amount;
@@ -22,6 +23,33 @@ class ReceiptScreen extends StatefulWidget {
 }
 
 class _ReceiptScreenState extends State<ReceiptScreen> {
+  // Variable to store the real name
+  String _accountDetailsName = "Unknown Name";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAccountDetails();
+  }
+
+  // Logic to find the contact by phone number
+  void _fetchAccountDetails() {
+    try {
+      final contact = UserData.contacts.firstWhere(
+            (c) => c['number'] == widget.contactNumber,
+      );
+      // Use the accountTitle if available, otherwise fallback to the nickname (contactName)
+      setState(() {
+        _accountDetailsName = contact['accountTitle'] ?? widget.contactName;
+      });
+    } catch (e) {
+      // If number not found in saved contacts, default to the name passed in
+      setState(() {
+        _accountDetailsName = widget.contactName;
+      });
+    }
+  }
+
   String get _transactionID => "ID#${Random().nextInt(90000000) + 4000000000}";
 
   String get _displayDate {
@@ -51,10 +79,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     // --- MANUAL CONTROLS ---
     // ===============================================================
     const Color headingColor = Color(0xFF505050);
-
-    // CHANGE: Changed from -22.0 to -17.0 to move header DOWN by 5 points
     const double headerTextVerticalShift = -17.0;
-
     const double headerTextHorizontalShift = 0.0;
     const double spaceBetweenTickAndText = 0.0;
     const double spaceBetweenTextLines = 0.0;
@@ -70,13 +95,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     const double greenDotY = -8.8;
     const double greenDotSize = 5.5;
     const double walletImageSize = 30.0;
-
-    // [CONTROL 13] GREEN 'e' CURVE
-    const double greenE_X = 0.0;
-    const double greenE_Y = 17.5;
-    const double greenE_Width = 12.0;
-    const double greenE_Height = 7.5;
-
     // ---------------------------------------------------------------
     const double receiptHeightFactor = 0.90;
     const double receiptBottomOffset = 20.0;
@@ -270,14 +288,16 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   const SizedBox(height: 10),
 
-                                  _buildCleanField("Account Details", "Shahana Amaan", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 2.0),
+                                  // Account Details (Name from UserData)
+                                  _buildCleanField("Account Details", _accountDetailsName, headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 2.0),
 
                                   const SizedBox(height: 10),
 
+                                  // [UPDATED] Sent by: IFTIKHAR KHAN
                                   _buildCleanField(
                                       "Sent by",
-                                      "FATIMA SHAH",
-                                      subValue: "03025529918",
+                                      "IFTIKHAR KHAN", // <--- UPDATED
+                                      subValue: "03125534518", // <--- UPDATED
                                       subValueTopPadding: sentByNumberTopPadding,
                                       headingColor: headingColor,
                                       headingFontSize: headingFontSize,

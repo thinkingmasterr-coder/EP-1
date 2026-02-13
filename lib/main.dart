@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'main_screen.dart'; // <--- IMPORT THE NEW FILE
+import 'splash_screen.dart'; // <--- IMPORT THIS
 
 void main() {
   runApp(const EasypaisaApp());
@@ -17,7 +17,7 @@ class EasypaisaApp extends StatelessWidget {
         primarySwatch: Colors.green,
         useMaterial3: true,
       ),
-      home: const MainScreen(), // <--- CHANGE THIS LINE
+      home: const SplashScreen(), // <--- CHANGE THIS LINE
     );
   }
 }

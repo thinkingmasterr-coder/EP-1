@@ -217,7 +217,7 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
   Widget _buildEasyPaisaLogo() {
     return ClipOval(
       child: Image.asset(
-        'assets/ep_cl.webp',
+        'assets/EP_logo.webp',
         width: 30,
         height: 30,
         fit: BoxFit.cover,

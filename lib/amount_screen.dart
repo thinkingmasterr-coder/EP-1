@@ -1,5 +1,6 @@
 // File: lib/amount_screen.dart
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'review_screen.dart';
 import 'amount_experiments.dart';
 
@@ -23,6 +24,48 @@ class AmountScreen extends StatefulWidget {
 
 class _AmountScreenState extends State<AmountScreen> {
   String amountText = "";
+  final _amountController = TextEditingController();
+  final _formatter = NumberFormat('#,##0');
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController.addListener(_formatAmount);
+  }
+
+  @override
+  void dispose() {
+    _amountController.removeListener(_formatAmount);
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _formatAmount() {
+    final originalText = _amountController.text;
+    final unformattedText = originalText.replaceAll(',', '');
+
+    // Prevent infinite loop by checking if the base number has changed
+    if (unformattedText == amountText) return;
+
+    amountText = unformattedText;
+
+    final double? numericValue = double.tryParse(unformattedText);
+    if (numericValue != null) {
+      final String formattedText = _formatter.format(numericValue);
+      if (formattedText != originalText) {
+        _amountController.value = _amountController.value.copyWith(
+          text: formattedText,
+          selection: TextSelection.collapsed(offset: formattedText.length),
+        );
+      }
+    } else if (unformattedText.isEmpty && originalText.isNotEmpty) {
+      _amountController.clear();
+    }
+    
+    // Update UI based on validity
+    setState(() {});
+  }
+
 
   bool get isValid {
     if (amountText.isEmpty) return false;
@@ -147,6 +190,7 @@ class _AmountScreenState extends State<AmountScreen> {
 
                         IntrinsicWidth(
                           child: TextField(
+                            controller: _amountController,
                             autofocus: true,
                             keyboardType: TextInputType.number,
                             textAlign: TextAlign.center,
@@ -157,11 +201,6 @@ class _AmountScreenState extends State<AmountScreen> {
                               hintText: "0",
                               hintStyle: TextStyle(color: Colors.black, fontSize: 40),
                             ),
-                            onChanged: (value) {
-                              setState(() {
-                                amountText = value;
-                              });
-                            },
                           ),
                         ),
                       ],

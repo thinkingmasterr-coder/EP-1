@@ -1,6 +1,7 @@
+// File: lib/review_screen.dart
 import 'package:flutter/material.dart';
 import 'user_data.dart';
-import 'processing_screen.dart'; // Connects to the Animation
+import 'processing_screen.dart';
 
 class ReviewScreen extends StatelessWidget {
   final String contactName;
@@ -16,8 +17,25 @@ class ReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Logic to find the real Account Title
+    String accountTitle = contactName; // Default fallback
+    try {
+      final contact = UserData.contacts.firstWhere(
+            (c) => c['number'] == contactNumber,
+      );
+      // If we found a specific Account Title, use it. Otherwise use the saved name.
+      if (contact['accountTitle'] != null && contact['accountTitle']!.isNotEmpty) {
+        accountTitle = contact['accountTitle']!;
+      }
+    } catch (e) {
+      // Contact not found in list, stick with the passed name
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
+      // [FIX] This prevents the "Split Second Error" caused by the keyboard closing
+      resizeToAvoidBottomInset: false,
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -87,7 +105,7 @@ class ReviewScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text("Account Title", style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
-                      Text(contactName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
+                      Text(accountTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
                     ],
                   ),
                   const SizedBox(height: 10),

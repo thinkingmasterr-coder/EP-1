@@ -1,22 +1,26 @@
-// File: lib/qr_review_screen.dart
+// File: lib/lib/till_processing_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'qr_processing_screen.dart';
 
-class QrReviewScreen extends StatelessWidget {
+class TillProcessingScreen extends StatelessWidget {
   final String amount;
+  final String tillNumber;
 
-  const QrReviewScreen({super.key, required this.amount});
+  const TillProcessingScreen({
+    super.key,
+    required this.amount,
+    required this.tillNumber,
+  });
 
   @override
   Widget build(BuildContext context) {
     final double amountValue = double.tryParse(amount) ?? 0;
     final NumberFormat currencyFormat = NumberFormat("#,##0", "en_US");
-    final NumberFormat currencyFormatWithDecimals =
-    NumberFormat("#,##0.00", "en_US");
+    final NumberFormat currencyFormatWithDecimals = NumberFormat("#,##0.00", "en_US");
+
     final String formattedAmount = currencyFormat.format(amountValue);
-    final String formattedTotalAmount =
-    currencyFormatWithDecimals.format(amountValue);
+    final String formattedTotalAmount = currencyFormatWithDecimals.format(amountValue);
 
     return Scaffold(
       appBar: AppBar(
@@ -25,7 +29,7 @@ class QrReviewScreen extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: const Text(
-          'QR Payment',
+          'Till Payment',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
@@ -44,42 +48,22 @@ class QrReviewScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // CHANGED: Added Spacer here to push everything down
+            // 1. Spacer to push content down (Matches QrReviewScreen)
             const Spacer(),
 
-            // Wrapped QR in a Stack to overlay the logo
+            // 2. The Asset Image (Matches QrReviewScreen position, but uses bill_img.png)
             Center(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Image.asset(
-                    'assets/qr_code1.png',
-                    width: 120,
-                    height: 120,
-                  ),
-                  // The Overlay Logo
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.black, width: 2),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/EP_logo.webp',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+              child: Image.asset(
+                'assets/bill_img.png',
+                width: 120,
+                height: 120,
+                fit: BoxFit.contain,
               ),
             ),
+
             const SizedBox(height: 20),
+
+            // 3. Transaction Details (Preserved Merchant & Till Number logic)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
@@ -97,29 +81,37 @@ class QrReviewScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
+
+                  // Merchant Name
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('QR Code Type',
-                          style: TextStyle(color: Colors.black54, fontSize: 13)),
-                      Text('Raast',
-                          style: TextStyle(color: Colors.black54, fontSize: 13)),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Store Name',
+                      Text('Merchant Name',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
                       Text('AK MOBILE CENTRE CHD',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
                     ],
                   ),
+
+                  const SizedBox(height: 8),
+
+                  // Till Number (Dynamic)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Till Number',
+                          style: TextStyle(color: Colors.black54, fontSize: 13)),
+                      Text(tillNumber,
+                          style: const TextStyle(color: Colors.black54, fontSize: 13)),
+                    ],
+                  ),
                 ],
               ),
             ),
+
             const SizedBox(height: 30),
+
+            // 4. AMOUNT DISPLAY (Matches QrReviewScreen)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -143,10 +135,12 @@ class QrReviewScreen extends StatelessWidget {
                 ),
               ],
             ),
+
             const SizedBox(height: 30),
 
-            // --- The "Rectangle" Section (Fee, Tax, Total) ---
+            // 5. Fee & Tax Section (Matches QrReviewScreen)
             const Divider(),
+
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Row(
@@ -167,6 +161,7 @@ class QrReviewScreen extends StatelessWidget {
                 ],
               ),
             ),
+
             Padding(
               padding: const EdgeInsets.only(top: 0.0, bottom: 8.0),
               child: Row(
@@ -181,29 +176,31 @@ class QrReviewScreen extends StatelessWidget {
                 ],
               ),
             ),
+
             const Divider(),
-            // CHANGED: Removed the Spacer() that was here.
+
+            // 6. BUTTON POSITIONING (Matches QrReviewScreen EXACTLY)
+            // No Spacer() here anymore.
 
             Padding(
-              // CHANGED: Adjusted top padding to 20.0 to create the "little distance" requested.
-              // Bottom padding remains 90.0 to keep the button location fixed.
               padding: const EdgeInsets.only(bottom: 90.0, top: 20.0),
               child: ElevatedButton(
                 onPressed: () {
+                  // Navigate to the Success Animation Screen
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => QrProcessingScreen(
                         amount: amount,
                         recipientName: "AK MOBILE CENTER CHD",
-                        recipientLocation: "Charsadda",
+                        recipientLocation: "Till Payment",
                       ),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00AA4F),
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 10), // Reduced vertical padding to match Review Screen
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),

@@ -1,6 +1,6 @@
 // File: lib/main_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // [ADDED] For SystemUiOverlayStyle
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'send_menu.dart';
 import 'screens/my_account_screen.dart';
@@ -24,16 +24,16 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     // ==========================================================
-    // ALIGNMENT CONTROLS (LOCKED)
+    // ALIGNMENT CONTROLS
     // ==========================================================
     double yOffset = 0.0;
     double settingsButtonTop = 30.0;
     double sendMoneyButtonTop = 255.0;
 
-    // LOCKED COORDINATES FOR BALANCE OVERLAY
+    // LOCKED COORDINATES FOR BALANCE OVERLAY (From your request)
     double balanceTop = 168.0;
     double balanceLeft = 35.0;
-    double balanceWidth = 180.0;
+    double balanceWidth = 190.0;
     double balanceHeight = 30.0;
 
     // EDITOR BUTTON POSITION
@@ -41,14 +41,13 @@ class _MainScreenState extends State<MainScreen> {
     double editorLeft = 250.0;
     // ==========================================================
 
-    // [ADDED] Wrap with AnnotatedRegion -> Container(Black) -> SafeArea -> Scaffold
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.black,
         statusBarIconBrightness: Brightness.light,
       ),
       child: Container(
-        color: Colors.black, // This creates the black background behind the status bar
+        color: Colors.black,
         child: SafeArea(
           child: Scaffold(
             backgroundColor: const Color(0xFFF3F4F6),
@@ -98,7 +97,7 @@ class _MainScreenState extends State<MainScreen> {
                   },
                 ),
 
-                // 4. THE BALANCE OVERLAY (Gradient Correction)
+                // 4. THE BALANCE OVERLAY
                 Positioned(
                   top: balanceTop,
                   left: balanceLeft,
@@ -110,10 +109,7 @@ class _MainScreenState extends State<MainScreen> {
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
                         colors: [
-                          // LEFT SIDE: LOCKED (Your Perfect Match)
                           Color(0xFF006E59),
-
-                          // RIGHT SIDE:
                           Color(0xFF006E59),
                         ],
                       ),
@@ -126,6 +122,7 @@ class _MainScreenState extends State<MainScreen> {
                       valueListenable: UserData.balance,
                       builder: (context, value, child) {
                         return Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             // The Balance Text
                             Text(
@@ -133,13 +130,13 @@ class _MainScreenState extends State<MainScreen> {
                                   ? "Rs. ${NumberFormat('#,##0.00').format(value)}"
                                   : "Rs. ****",
                               style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
+                                color: Color(0xFFEEEEEE), // CHANGED: Slightly less bright white
+                                fontSize: 19,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
 
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
 
                             // The Eye Icon
                             GestureDetector(
@@ -149,9 +146,11 @@ class _MainScreenState extends State<MainScreen> {
                                 });
                               },
                               child: Icon(
-                                isBalanceVisible ? Icons.visibility : Icons.visibility_off,
-                                color: Colors.white,
-                                size: 18,
+                                isBalanceVisible
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: const Color(0xFFEEEEEE), // CHANGED: Matches the text color
+                                size: 20,
                               ),
                             ),
                           ],

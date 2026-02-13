@@ -103,6 +103,8 @@ class _QrResultScreenState extends State<QrResultScreen> {
                       controller: _amountController,
                       keyboardType: TextInputType.number,
                       decoration: const InputDecoration(
+                        hintText: 'Enter Amount',
+                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
                         border: InputBorder.none,
                         isDense: true,
                       ),
@@ -147,6 +149,7 @@ class _QrResultScreenState extends State<QrResultScreen> {
                       decoration: const InputDecoration(
                         counterText: '',
                         hintText: 'Enter message here',
+                        hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
                         border: InputBorder.none,
                         isDense: true,
                       ),
