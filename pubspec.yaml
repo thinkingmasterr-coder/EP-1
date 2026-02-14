@@ -16,7 +16,7 @@ dependencies:
   google_fonts: ^6.1.0
   audioplayers: ^6.0.0
   video_player: ^2.8.6
-
+  shared_preferences: ^2.2.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
