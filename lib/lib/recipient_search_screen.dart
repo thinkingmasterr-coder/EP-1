@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'user_data.dart';
 import 'amount_screen.dart';
-import 'recipient_experiments.dart'; // <--- WIRED UP
+import 'recipient_experiments.dart';
 
 class RecipientSearchScreen extends StatefulWidget {
   const RecipientSearchScreen({super.key});
@@ -30,7 +30,8 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final filteredContacts = UserData.contacts.where((contact) {
+    // FIXED: Added .value to access the list inside the notifier
+    final filteredContacts = UserData.contacts.value.where((contact) {
       final number = contact["number"]!;
       final name = contact["name"]!.toLowerCase();
       final query = searchQuery.toLowerCase();
@@ -85,34 +86,28 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
             ),
             child: Row(
               children: [
-                // A. Green Accent Line
                 Container(
                   width: RecipientExperiments.greenLineWidth,
                   height: double.infinity,
                   color: const Color(0xFF00AA4F),
                 ),
-
-                // B. Input Field
                 Expanded(
                   child: TextField(
                     controller: _searchController,
                     autofocus: true,
                     onChanged: (value) => setState(() => searchQuery = value),
                     keyboardType: TextInputType.text,
-                    // Use center alignment + contentPadding from experiment file
                     textAlignVertical: TextAlignVertical.center,
                     style: RecipientExperiments.inputTextStyle,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      isDense: true, // Helps with strict vertical alignment
+                      isDense: true,
                       contentPadding: RecipientExperiments.inputContentPadding,
                       hintText: "Enter Number or Search Contacts",
                       hintStyle: RecipientExperiments.hintTextStyle,
                     ),
                   ),
                 ),
-
-                // C. Right Arrow Button
                 Container(
                   margin: const EdgeInsets.only(right: 8),
                   width: 32,
@@ -133,7 +128,7 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
 
           const SizedBox(height: 10),
 
-          // --- 3. CONTACTS HEADING (Grey Bar) ---
+          // --- 3. CONTACTS HEADING ---
           Container(
             width: double.infinity,
             color: RecipientExperiments.headerBgColor,
@@ -160,7 +155,6 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
                     onTap: () => _goToAmountScreen(contact),
                     child: Row(
                       children: [
-                        // Left: Avatar
                         Container(
                           width: RecipientExperiments.avatarSize,
                           height: RecipientExperiments.avatarSize,
@@ -179,10 +173,7 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
                             ),
                           ),
                         ),
-
                         const SizedBox(width: 15),
-
-                        // Center: Name & Number
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,8 +190,6 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
                             ],
                           ),
                         ),
-
-                        // Right: easypaisa Logo
                         _buildEasyPaisaLogo(),
                       ],
                     ),

@@ -1,71 +1,83 @@
+import 'dart:convert'; // Required to turn the list into text
 import 'package:flutter/material.dart';
-
-// This class acts as the "Brain" of the app.
-// It stores the balance and contacts so they can be edited from anywhere.
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserData {
   // 1. THE BALANCE
-  // We use ValueNotifier so the screen updates automatically when this number changes.
-  static ValueNotifier<double> balance = ValueNotifier(6.46);
+  static ValueNotifier<double> balance = ValueNotifier(0.00);
 
   // 2. THE CONTACTS
-  // A simple list to store people you can send money to.
-  static List<Map<String, String>> contacts = [
+  static ValueNotifier<List<Map<String, String>>> contacts = ValueNotifier([]);
+
+  // DEFAULT CONTACTS (If the app is opened for the very first time)
+  static final List<Map<String, String>> _defaultContacts = [
     {
       "name": "Shehzad Khan",
       "number": "03001234567",
-      "initials": "SK", // We will use this if there is no picture
+      "initials": "SK",
+      "accountTitle": "SHEHZAD KHAN",
     },
     {
       "name": "Syed Rasool",
       "number": "03119876543",
       "initials": "SR",
+      "accountTitle": "SYED RASOOL SHAH",
     },
-    {
-      "name": "Nana",
-      "number": "03109192826",
-      "initials": "N",
-    },
-    {
-      "name": "Abbas Bacha",
-      "number": "03139162159",
-      "initials": "AB",
-    },
-    {
-      "name": "Ahmed Ali",
-      "number": "03367631215",
-      "initials": "AA",
-    },
-    {
-      "name": "Ahmed2 Awkum",
-      "number": "03025736656",
-      "initials": "AA",
-    },
-    {
-      "name": "Annonomy 53",
-      "number": "03149007912",
-      "initials": "A5",
-    },
-    {
-      "name": "Noreen Akbar",
-      "number": "03440644461",
-      "initials": "NA",
-    },
+    // ... You can keep your other defaults here if you want
   ];
 
-  // 3. TOOLS
-  // Function to update balance (used by the hidden editor)
-  static void setBalance(double newAmount) {
-    balance.value = newAmount;
+  // ==========================================================
+  // 💾 THE SAVING & LOADING SYSTEM
+  // ==========================================================
+
+  // Call this once when the app starts!
+  static Future<void> loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // A. LOAD BALANCE (Default to 6.46 if nothing is saved)
+    double? savedBalance = prefs.getDouble('my_balance');
+    if (savedBalance != null) {
+      balance.value = savedBalance;
+    } else {
+      balance.value = 6.46; // Your starting default
+    }
+
+    // B. LOAD CONTACTS
+    String? savedContactsString = prefs.getString('my_contacts');
+    if (savedContactsString != null) {
+      // Decode the text back into a List
+      List<dynamic> decoded = jsonDecode(savedContactsString);
+      // Convert dynamic list to List<Map<String, String>>
+      contacts.value = decoded.map((item) => Map<String, String>.from(item)).toList();
+    } else {
+      // If no contacts saved, use defaults
+      contacts.value = List.from(_defaultContacts);
+    }
   }
 
-  // Function to deduct money (used when sending money)
-  static void deductBalance(double amount) {
-    balance.value -= amount;
+  // SAVE BALANCE
+  static Future<void> setBalance(double newAmount) async {
+    balance.value = newAmount;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('my_balance', newAmount);
   }
-  
-  // Function to add a new contact
-  static void addContact(Map<String, String> newContact) {
-    contacts.add(newContact);
+
+  static Future<void> deductBalance(double amount) async {
+    double newBalance = balance.value - amount;
+    setBalance(newBalance); // This handles the saving automatically
+  }
+
+  // SAVE NEW CONTACT
+  static Future<void> addContact(Map<String, String> newContact) async {
+    // 1. Add to the current list
+    final currentList = List<Map<String, String>>.from(contacts.value);
+    currentList.add(newContact);
+    contacts.value = currentList;
+
+    // 2. Save to storage
+    final prefs = await SharedPreferences.getInstance();
+    // Convert the list to "Text" (JSON) so SharedPrefs can save it
+    String encodedList = jsonEncode(currentList);
+    await prefs.setString('my_contacts', encodedList);
   }
 }

@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
-import 'main_screen.dart'; // <--- IMPORT THE NEW FILE
+import 'splash_screen.dart';
+import 'user_data.dart'; // <--- Import UserData
 
-void main() {
+void main() async {
+  // 1. Ensure Flutter is ready
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. Load the saved data!
+  await UserData.loadData();
+
+  // 3. Run the App
   runApp(const EasypaisaApp());
 }
 
@@ -17,7 +25,7 @@ class EasypaisaApp extends StatelessWidget {
         primarySwatch: Colors.green,
         useMaterial3: true,
       ),
-      home: const MainScreen(), // <--- CHANGE THIS LINE
+      home: const SplashScreen(),
     );
   }
 }

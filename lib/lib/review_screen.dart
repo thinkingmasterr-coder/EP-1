@@ -1,8 +1,7 @@
-
+// File: lib/review_screen.dart
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'user_data.dart';
-import 'processing_screen.dart'; // Connects to the Animation
+import 'processing_screen.dart';
 
 class ReviewScreen extends StatelessWidget {
   final String contactName;
@@ -18,17 +17,26 @@ class ReviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double amountValue = double.tryParse(amount.replaceAll(',', '')) ?? 0;
-    final NumberFormat currencyFormat = NumberFormat("#,##0", "en_US");
-    final NumberFormat currencyFormatWithDecimals =
-        NumberFormat("#,##0.00", "en_US");
-
-    final String formattedAmount = currencyFormat.format(amountValue);
-    final String formattedTotalAmount =
-        currencyFormatWithDecimals.format(amountValue);
+    // 1. Logic to find the real Account Title
+    String accountTitle = contactName; // Default fallback
+    try {
+      // FIXED: Use .value to access the list from the ValueNotifier
+      final contact = UserData.contacts.value.firstWhere(
+            (c) => c['number'] == contactNumber,
+      );
+      // If we found a specific Account Title, use it. Otherwise use the saved name.
+      if (contact['accountTitle'] != null && contact['accountTitle']!.isNotEmpty) {
+        accountTitle = contact['accountTitle']!;
+      }
+    } catch (e) {
+      // Contact not found in list, stick with the passed name
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F4F6),
+      // [FIX] This prevents the "Split Second Error" caused by the keyboard closing
+      resizeToAvoidBottomInset: false,
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -36,11 +44,7 @@ class ReviewScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("easypaisa Transfer",
-            style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold)),
+        title: const Text("easypaisa Transfer", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
       body: Padding(
@@ -73,13 +77,7 @@ class ReviewScreen extends StatelessWidget {
                       ValueListenableBuilder<double>(
                         valueListenable: UserData.balance,
                         builder: (context, value, child) {
-                          final formattedBalance =
-                              currencyFormatWithDecimals.format(value);
-                          return Text("Balance Rs. $formattedBalance",
-                              style: const TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold));
+                          return Text("Balance Rs. ${value.toStringAsFixed(2)}", style: const TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold));
                         },
                       ),
                     ],
@@ -107,34 +105,16 @@ class ReviewScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Account Title",
-                          style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 14,
-                              fontWeight: FontWeight.normal,
-                              letterSpacing: -0.2)),
-                      Text(contactName,
-                          style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.normal,
-                              letterSpacing: -0.2)),
+                      const Text("Account Title", style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
+                      Text(accountTitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
                     ],
                   ),
                   const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Account Number",
-                          style: TextStyle(
-                              color: Colors.black87,
-                              fontSize: 14,
-                              fontWeight: FontWeight.normal,
-                              letterSpacing: -0.2)),
-                      Text(contactNumber,
-                          style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.normal,
-                              letterSpacing: -0.2)),
+                      const Text("Account Number", style: TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
+                      Text(contactNumber, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.normal, letterSpacing: -0.2)),
                     ],
                   ),
                 ],
@@ -146,8 +126,7 @@ class ReviewScreen extends StatelessWidget {
             // PAYMENT SUMMARY
             const Padding(
               padding: EdgeInsets.only(left: 8.0),
-              child: Text("Payment Summary",
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text("Payment Summary", style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 10),
             Container(
@@ -159,10 +138,9 @@ class ReviewScreen extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  _buildSummaryRow("Transfer amount", "Rs. $formattedAmount"),
+                  _buildSummaryRow("Transfer amount", "Rs. $amount"),
                   _buildSummaryRow("Fee (including tax)", "Free"),
-                  _buildSummaryRow("Total Amount", "Rs. $formattedTotalAmount",
-                      isBold: true),
+                  _buildSummaryRow("Total Amount", "Rs. $amount.00", isBold: true),
                 ],
               ),
             ),
@@ -229,8 +207,7 @@ class ReviewScreen extends StatelessWidget {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00AA4F),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
                 onPressed: () {
                   // START THE ANIMATION
@@ -245,11 +222,7 @@ class ReviewScreen extends StatelessWidget {
                     ),
                   );
                 },
-                child: const Text("Send Now",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold)),
+                child: const Text("Send Now", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
           ],
