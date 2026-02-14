@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Required for the status bar styling
-import 'package:video_player/video_player.dart';
 import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -12,69 +11,44 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late VideoPlayerController _controller;
-  bool _initialized = false;
-
   @override
   void initState() {
     super.initState();
-    _initializeVideo();
-  }
-
-  void _initializeVideo() {
-    _controller = VideoPlayerController.asset('assets/splash.mp4')
-      ..initialize().then((_) {
-        setState(() {
-          _initialized = true;
-        });
-
-        _controller.play();
-
-        // Navigate exactly when the video finishes
-        Timer(_controller.value.duration, _navigateToHome);
-      });
+    // Navigate to the main screen right after the first frame is rendered.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _navigateToHome();
+    });
   }
 
   void _navigateToHome() {
-    Navigator.of(context).pushReplacement(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 500),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+    if (mounted) {
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 500),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // 1. Force the System UI (Status Bar & Nav Bar) to be BLACK
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.black,          // Top Strip
-        statusBarIconBrightness: Brightness.light, // White Battery/Wifi icons
-        systemNavigationBarColor: Colors.black, // Bottom Strip
+    // This will just show a black screen for a moment before navigating.
+    return const AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.black,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
-        backgroundColor: Colors.black, // This fills the empty space
-
-        // 2. The SafeArea adds the "Black Strips" you asked for
+        backgroundColor: Colors.black,
         body: SafeArea(
           child: Center(
-            child: _initialized
-                ? AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: VideoPlayer(_controller),
-            )
-                : Container(), // Stay black while loading
+            child: SizedBox.shrink(),
           ),
         ),
       ),

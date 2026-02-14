@@ -1,4 +1,3 @@
-// File: lib/qr_receipt_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
@@ -160,32 +159,10 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
                                         ),
                                         SizedBox(height: spaceBetweenTickAndText),
 
-                                        // --- EASYPAISA LOGO TEXT ---
-                                        Stack(
-                                          alignment: Alignment.center,
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            Text(
-                                              "easypaisa",
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: easypaisaFontSize,
-                                                letterSpacing: -1,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            Transform.translate(
-                                              offset: const Offset(greenDotX, greenDotY),
-                                              child: Container(
-                                                height: greenDotSize,
-                                                width: greenDotSize,
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFF00C853),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                        // --- EASYPAISA LOGO ---
+                                        Image.asset(
+                                          'assets/re_ep.jpg',
+                                          height: 30,
                                         ),
 
                                         SizedBox(height: spaceBetweenTextLines),

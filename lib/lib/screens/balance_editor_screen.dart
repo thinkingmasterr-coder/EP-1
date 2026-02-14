@@ -1,4 +1,3 @@
-// File: lib/screens/balance_editor_screen.dart
 import 'package:flutter/material.dart';
 import '../user_data.dart';
 
@@ -21,7 +20,6 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
   // --- Dialog to Add or Edit Contact ---
   void _showContactDialog({int? index}) {
     final isEditing = index != null;
-    // FIXED: Access contacts via .value
     final Map<String, String> contact = isEditing
         ? UserData.contacts.value[index]
         : {"name": "", "number": "", "initials": "", "accountTitle": ""};
@@ -85,42 +83,45 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
               };
 
               if (isEditing) {
-                // FIXED: We don't have an "Edit" function in UserData yet,
-                // but for now let's just use addContact or simple logic.
-                // Since `shared_preferences` is simple, editing is tricky.
-                // Let's just DELETE and ADD for now (Simplest fix).
-                // Or better, we just update the ValueNotifier list directly here.
-
-                // Get current list
-                var currentList = List<Map<String, String>>.from(UserData.contacts.value);
-                currentList[index] = newData;
-
-                // This triggers the listener and saves (because we need to add a 'saveContacts' helper,
-                // but for now, let's just use the addContact logic manually here)
-                UserData.contacts.value = currentList;
-                // We really should call a save function here.
-                // Since UserData.addContact handles saving, let's create a quick save helper or just reuse add logic.
-                // For simplicity, I'll recommend calling `UserData.addContact` for new ones.
-                // For edits, we need to manually trigger save.
-
-                // *Hack for now to ensure saving:*
-                UserData.addContact(newData); // Wait, this adds a duplicate.
-                // Let's assume you will just Add New for now to test.
-                // I will update UserData below to handle updates better.
+                UserData.updateContact(index, newData);
               } else {
-                // FIXED: Use the new static method
                 UserData.addContact(newData);
               }
 
               Navigator.pop(ctx);
-              setState(() {}); // Refresh UI
             },
-            child: const Text("Save"),
+            child: Text(isEditing ? "Update" : "Save"),
           ),
         ],
       ),
     );
   }
+
+  // --- Dialog for Deletion Confirmation ---
+  void _showDeleteConfirmationDialog(int index) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Confirm Delete"),
+        content: Text("Are you sure you want to delete '${UserData.contacts.value[index]['name']}'?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () {
+              UserData.deleteContact(index);
+              Navigator.pop(ctx); // Close the confirmation dialog
+            },
+            child: const Text("Delete"),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -199,7 +200,6 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
             ),
 
             // --- SECTION 3: CONTACT LIST ---
-            // FIXED: Wrapped in ValueListenableBuilder so it updates when you add a contact
             ValueListenableBuilder<List<Map<String, String>>>(
                 valueListenable: UserData.contacts,
                 builder: (context, contactsList, child) {
@@ -218,7 +218,21 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
                         title: Text(contact['name'] ?? "Unknown"),
                         subtitle: Text("${contact['number']}\nTitle: ${contact['accountTitle'] ?? 'N/A'}"),
                         isThreeLine: true,
-                        trailing: const Icon(Icons.edit, size: 16, color: Colors.grey),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 18, color: Colors.grey),
+                              tooltip: "Edit Contact",
+                              onPressed: () => _showContactDialog(index: index),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete_outline, size: 18, color: Colors.redAccent),
+                              tooltip: "Delete Contact",
+                              onPressed: () => _showDeleteConfirmationDialog(index),
+                            ),
+                          ],
+                        ),
                         onTap: () => _showContactDialog(index: index),
                       );
                     },

@@ -67,17 +67,38 @@ class UserData {
     setBalance(newBalance); // This handles the saving automatically
   }
 
+  // PRIVATE HELPER TO SAVE CONTACTS
+  static Future<void> _saveContacts() async {
+    final prefs = await SharedPreferences.getInstance();
+    String encodedList = jsonEncode(contacts.value);
+    await prefs.setString('my_contacts', encodedList);
+  }
+
   // SAVE NEW CONTACT
   static Future<void> addContact(Map<String, String> newContact) async {
-    // 1. Add to the current list
     final currentList = List<Map<String, String>>.from(contacts.value);
     currentList.add(newContact);
     contacts.value = currentList;
+    await _saveContacts();
+  }
 
-    // 2. Save to storage
-    final prefs = await SharedPreferences.getInstance();
-    // Convert the list to "Text" (JSON) so SharedPrefs can save it
-    String encodedList = jsonEncode(currentList);
-    await prefs.setString('my_contacts', encodedList);
+  // UPDATE CONTACT
+  static Future<void> updateContact(int index, Map<String, String> contactData) async {
+    final currentList = List<Map<String, String>>.from(contacts.value);
+    if (index >= 0 && index < currentList.length) {
+      currentList[index] = contactData;
+      contacts.value = currentList;
+      await _saveContacts();
+    }
+  }
+
+  // DELETE CONTACT
+  static Future<void> deleteContact(int index) async {
+    final currentList = List<Map<String, String>>.from(contacts.value);
+    if (index >= 0 && index < currentList.length) {
+      currentList.removeAt(index);
+      contacts.value = currentList;
+      await _saveContacts();
+    }
   }
 }

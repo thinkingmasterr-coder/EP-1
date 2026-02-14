@@ -88,12 +88,7 @@ class _MainScreenState extends State<MainScreen> {
                   height: 100,
                   label: "Send Money",
                   onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => const SendMenu(),
-                    );
+                    SendMenu.show(context);
                   },
                 ),
 

@@ -1,4 +1,3 @@
-// File: lib/receipt_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
@@ -161,31 +160,9 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                           child: Icon(Icons.check, color: Colors.white, size: tickIconSize),
                                         ),
                                         SizedBox(height: spaceBetweenTickAndText),
-                                        Stack(
-                                          alignment: Alignment.center,
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            Text(
-                                              "easypaisa",
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: easypaisaFontSize,
-                                                letterSpacing: -1,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            Transform.translate(
-                                              offset: const Offset(greenDotX, greenDotY),
-                                              child: Container(
-                                                height: greenDotSize,
-                                                width: greenDotSize,
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFF00C853),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                        Image.asset(
+                                          'assets/re_ep.jpg',
+                                          height: 30,
                                         ),
                                         SizedBox(height: spaceBetweenTextLines),
                                         const Text(
