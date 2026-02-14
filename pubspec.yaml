@@ -10,21 +10,40 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.6
-  confetti: ^0.7.0    # For the animation
-  intl: ^0.19.0       # For the DateFormat in HistoryScreen
+  confetti: ^0.7.0
+  intl: ^0.19.0
   mobile_scanner: ^5.1.0
   google_fonts: ^6.1.0
   audioplayers: ^6.0.0
   video_player: ^2.8.6
   shared_preferences: ^2.2.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
-  flutter_native_splash: ^2.3.1
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.1  # <--- I ADDED THIS BACK
 
-# PAY ATTENTION TO THE SPACES BELOW
-# In your pubspec.yaml
+# --- CONFIGURATION FOR ICONS ---
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/ep_cl.webp" # Ensure this file exists for your icon
+  min_sdk_android: 21
+
+# --- CONFIGURATION FOR SPLASH (Black Screen) ---
+flutter_native_splash:
+  color: "#000000"
+  # image: assets/EP_logo.webp  <-- KEEP COMMENTED OUT to have no logo
+  fullscreen: true
+
+  android_12:
+    color: "#000000"
+    icon_background_color: "#000000"
+    # image: assets/EP_logo.webp <-- KEEP COMMENTED OUT
+    fullscreen: true
+
 flutter:
   uses-material-design: true
   assets:
@@ -38,14 +57,4 @@ flutter:
     - assets/wallet_ik.png
     - assets/sounds/
     - assets/splash.mp4
-
-flutter_native_splash:
-    color: "#000000"
-    image: assets/EP_logo.webp
-    fullscreen: true
-
-    android_12:
-      image: assets/EP_logo.webp
-      icon_background_color: "#000000"
-      color: "#000000"
-      fullscreen: true
+    - assets/re_ep.jpg
