@@ -7,29 +7,36 @@ class ReviewScreen extends StatelessWidget {
   final String contactName;
   final String contactNumber;
   final String amount;
+  final String? fetchedAccountTitle;
 
   const ReviewScreen({
     super.key,
     required this.contactName,
     required this.contactNumber,
     required this.amount,
+    this.fetchedAccountTitle,
   });
 
   @override
   Widget build(BuildContext context) {
     // 1. Logic to find the real Account Title
-    String accountTitle = contactName; // Default fallback
-    try {
-      // FIXED: Use .value to access the list from the ValueNotifier
-      final contact = UserData.contacts.value.firstWhere(
-            (c) => c['number'] == contactNumber,
-      );
-      // If we found a specific Account Title, use it. Otherwise use the saved name.
-      if (contact['accountTitle'] != null && contact['accountTitle']!.isNotEmpty) {
-        accountTitle = contact['accountTitle']!;
+    String accountTitle = (fetchedAccountTitle != null && fetchedAccountTitle!.isNotEmpty)
+        ? fetchedAccountTitle!
+        : contactName;
+    
+    if (fetchedAccountTitle == null || fetchedAccountTitle!.isEmpty) {
+      try {
+        // FIXED: Use .value to access the list from the ValueNotifier
+        final contact = UserData.contacts.value.firstWhere(
+              (c) => c['number'] == contactNumber,
+        );
+        // If we found a specific Account Title, use it. Otherwise use the saved name.
+        if (contact['accountTitle'] != null && contact['accountTitle']!.isNotEmpty) {
+          accountTitle = contact['accountTitle']!;
+        }
+      } catch (e) {
+        // Contact not found in list, stick with the passed name
       }
-    } catch (e) {
-      // Contact not found in list, stick with the passed name
     }
 
     return Scaffold(
@@ -218,6 +225,7 @@ class ReviewScreen extends StatelessWidget {
                         amount: amount,
                         contactName: contactName,
                         contactNumber: contactNumber,
+                        fetchedAccountTitle: fetchedAccountTitle,
                       ),
                     ),
                   );

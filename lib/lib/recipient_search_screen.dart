@@ -1,5 +1,8 @@
 // File: lib/recipient_search_screen.dart
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'user_data.dart';
 import 'amount_screen.dart';
 import 'recipient_experiments.dart';
@@ -24,6 +27,100 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
           contactNumber: contact["number"]!,
           contactInitials: contact["initials"],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSelectRow(String number) {
+    return InkWell(
+      onTap: () async {
+        // 1. Show the Loading Overlay
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF00AA4F)),
+            );
+          },
+        );
+
+        String fetchedName = "";
+
+        // 2. Ping the Python Server
+        try {
+          final response = await http.post(
+            Uri.parse('http://192.168.100.5:5000/get_title'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'phone_number': number}),
+          );
+
+          if (response.statusCode == 200) {
+            final data = jsonDecode(response.body);
+            // Verify receipt to prevent race conditions
+            if (data['phone_number'] == number) {
+              fetchedName = data['title'] ?? "";
+            }
+          }
+        } catch (e) {
+          debugPrint("Error fetching title: $e");
+          // If server fails, it will just pass an empty string, keeping your app from crashing
+        }
+
+        // 3. Close the Loading Overlay
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+
+        // 4. Navigate and Inject the Fetched Name!
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AmountScreen(
+                contactName: fetchedName, // <--- INJECTED HERE
+                contactNumber: number,
+                contactInitials: "",
+              ),
+            ),
+          );
+        }
+      },
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: RecipientExperiments.avatarSize,
+                  height: RecipientExperiments.avatarSize,
+                  child: Center(
+                    child: Text(
+                      "Select",
+                      style: TextStyle(
+                        color: Color(0xFF00AA4F),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Text(
+                    number,
+                    style: RecipientExperiments.contactName,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Divider(color: Colors.black12, height: 1),
+          ),
+        ],
       ),
     );
   }
@@ -64,7 +161,6 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // FIXED: Added .value to access the list inside the notifier
     final filteredContacts = UserData.contacts.value.where((contact) {
       final number = contact["number"]!;
       final name = contact["name"]!.toLowerCase();
@@ -72,8 +168,23 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
       return number.contains(query) || name.contains(query);
     }).toList();
 
-    // Sort contacts by name (A-Z)
     filteredContacts.sort((a, b) => a['name']!.toLowerCase().compareTo(b['name']!.toLowerCase()));
+
+    final bool isNumeric = RegExp(r'^\d+$').hasMatch(searchQuery);
+    final bool is11Digits = searchQuery.length == 11 && isNumeric;
+
+    String headerText = "Your easypaisa Contacts";
+    bool showHeader = true;
+
+    if (searchQuery.isNotEmpty) {
+      if (is11Digits) {
+        showHeader = false;
+      } else if (isNumeric) {
+        headerText = "Contact not found";
+      } else if (filteredContacts.isEmpty) {
+        headerText = "Contact not found";
+      }
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -98,8 +209,6 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 10),
-
-          // --- 1. INSTRUCTION LABEL ---
           const Padding(
             padding: RecipientExperiments.instructionPadding,
             child: Text(
@@ -107,8 +216,6 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
               style: RecipientExperiments.instructionText,
             ),
           ),
-
-          // --- 2. SEARCH INPUT FIELD ---
           Container(
             height: RecipientExperiments.searchBarHeight,
             margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -159,21 +266,18 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 10),
-
-          // --- 3. CONTACTS HEADING ---
-          Container(
-            width: double.infinity,
-            color: RecipientExperiments.headerBgColor,
-            padding: RecipientExperiments.headerPadding,
-            child: const Text(
-              "Your easypaisa Contacts",
-              style: RecipientExperiments.headerText,
+          if (showHeader)
+            Container(
+              width: double.infinity,
+              color: RecipientExperiments.headerBgColor,
+              padding: RecipientExperiments.headerPadding,
+              child: Text(
+                headerText,
+                style: RecipientExperiments.headerText,
+              ),
             ),
-          ),
-
-          // --- 4. CONTACT LIST ---
+          if (is11Digits) _buildSelectRow(searchQuery),
           Expanded(
             child: ListView.separated(
               itemCount: filteredContacts.length,

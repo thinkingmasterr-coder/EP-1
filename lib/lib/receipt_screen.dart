@@ -9,12 +9,14 @@ class ReceiptScreen extends StatefulWidget {
   final String amount;
   final String contactName;
   final String contactNumber;
+  final String? fetchedAccountTitle;
 
   const ReceiptScreen({
     super.key,
     required this.amount,
     required this.contactName,
     required this.contactNumber,
+    this.fetchedAccountTitle,
   });
 
   @override
@@ -31,6 +33,13 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
   }
 
   void _fetchAccountDetails() {
+    if (widget.fetchedAccountTitle != null && widget.fetchedAccountTitle!.isNotEmpty) {
+      setState(() {
+        _accountDetailsName = widget.fetchedAccountTitle!;
+      });
+      return;
+    }
+    
     try {
       final contact = UserData.contacts.value.firstWhere(
             (c) => c['number'] == widget.contactNumber,
@@ -248,7 +257,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   const Spacer(flex: 3),
 
-                                  _buildCleanField("Sent to", widget.contactName, subValue: widget.contactNumber, headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 2.0),
+                                  _buildCleanField("Sent to", widget.fetchedAccountTitle ?? widget.contactName, subValue: widget.contactNumber, headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 2.0),
 
                                   const SizedBox(height: 10),
 
