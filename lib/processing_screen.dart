@@ -13,12 +13,14 @@ class ProcessingScreen extends StatefulWidget {
   final String amount;
   final String contactName;
   final String contactNumber;
+  final String? fetchedAccountTitle;
 
   const ProcessingScreen({
     super.key,
     required this.amount,
     required this.contactName,
     required this.contactNumber,
+    this.fetchedAccountTitle,
   });
 
   @override
@@ -131,7 +133,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     final newTransaction = TransactionModel(
       type: 'Money Transfer',
       bankName: 'easypaisa',
-      receiverName: widget.contactName,
+      receiverName: widget.fetchedAccountTitle ?? widget.contactName,
       contactNumber: widget.contactNumber,
       dateTime: DateTime.now(),
       amount: double.tryParse(widget.amount) ?? 0.0,
@@ -168,6 +170,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         amount: widget.amount,
         contactName: widget.contactName,
         contactNumber: widget.contactNumber,
+        fetchedAccountTitle: widget.fetchedAccountTitle,
       ),
     );
   }
@@ -223,6 +226,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   // --- VIEW 2: SUCCESS ---
   Widget _buildSuccessView() {
     final formatCurrency = NumberFormat('#,##0');
+    final String displayName = widget.fetchedAccountTitle ?? widget.contactName;
 
     return Column(
       children: [
@@ -302,7 +306,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           ),
           alignment: Alignment.center,
           child: Text(
-            widget.contactName.isNotEmpty ? widget.contactName[0].toUpperCase() : "U",
+            displayName.isNotEmpty ? displayName[0].toUpperCase() : "U",
             style: const TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w400),
           ),
         ),
@@ -311,7 +315,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
         // 4. NAME & NUMBER
         Text(
-          widget.contactName,
+          displayName,
           style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black),
         ),
 

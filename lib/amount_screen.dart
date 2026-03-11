@@ -9,6 +9,7 @@ class AmountScreen extends StatefulWidget {
   final String contactNumber;
   final String? contactImage;
   final String? contactInitials;
+  final String? fetchedAccountTitle;
 
   const AmountScreen({
     super.key,
@@ -16,6 +17,7 @@ class AmountScreen extends StatefulWidget {
     required this.contactNumber,
     this.contactImage,
     this.contactInitials,
+    this.fetchedAccountTitle,
   });
 
   @override
@@ -75,6 +77,11 @@ class _AmountScreenState extends State<AmountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Determine what to display for the name
+    final String displayName = (widget.fetchedAccountTitle != null && widget.fetchedAccountTitle!.isNotEmpty)
+        ? widget.fetchedAccountTitle!
+        : widget.contactName;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
@@ -139,7 +146,7 @@ class _AmountScreenState extends State<AmountScreen> {
                           child: Text(
                             (widget.contactInitials != null && widget.contactInitials!.isNotEmpty)
                                 ? widget.contactInitials!
-                                : (widget.contactName.isNotEmpty ? widget.contactName[0] : ""),
+                                : (displayName.isNotEmpty ? displayName[0].toUpperCase() : ""),
                             style: AmountExperiments.receiverInitialsStyle,
                           ),
                         ),
@@ -149,8 +156,10 @@ class _AmountScreenState extends State<AmountScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (widget.contactName.isNotEmpty)
-                              Text(widget.contactName, style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
+                            Text(
+                              displayName,
+                              style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500),
+                            ),
                             Text(widget.contactNumber, style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
                           ],
                         ),
@@ -246,6 +255,7 @@ class _AmountScreenState extends State<AmountScreen> {
                                 contactName: widget.contactName,
                                 contactNumber: widget.contactNumber,
                                 amount: amountText,
+                                fetchedAccountTitle: widget.fetchedAccountTitle,
                               ),
                             ),
                           );

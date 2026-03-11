@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'user_data.dart';
 import 'amount_screen.dart';
 import 'recipient_experiments.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class RecipientSearchScreen extends StatefulWidget {
   const RecipientSearchScreen({super.key});
@@ -15,7 +17,7 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
   String searchQuery = "";
   final TextEditingController _searchController = TextEditingController();
 
-  void _goToAmountScreen(Map<String, String> contact) {
+  void _goToAmountScreen(Map<String, String> contact, {String? fetchedAccountTitle}) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -23,14 +25,60 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
           contactName: contact["name"]!,
           contactNumber: contact["number"]!,
           contactInitials: contact["initials"],
+          fetchedAccountTitle: fetchedAccountTitle,
         ),
       ),
     );
   }
 
+  Future<void> _fetchTitleAndGo(String number) async {
+    // Show non-dismissible loading overlay
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF00AA4F),
+        ),
+      ),
+    );
+
+    String? title;
+    try {
+      final response = await http.post(
+        Uri.parse('http://192.168.100.5:5000/get_title'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'phone_number': number}),
+      ).timeout(const Duration(seconds: 15));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final String fetchedNumber = data['phone_number']?.toString() ?? "";
+        
+        // Validate returned phone number matches to avoid race conditions
+        if (fetchedNumber == number) {
+          title = data['title'];
+        }
+      }
+    } catch (e) {
+      debugPrint("Title fetch failed: $e");
+    } finally {
+      if (mounted) {
+        // Dismiss overlay
+        Navigator.pop(context);
+        
+        // ALWAYS navigate to the next screen, using the fetched title if available
+        _goToAmountScreen(
+          {"name": "", "number": number, "initials": ""},
+          fetchedAccountTitle: title,
+        );
+      }
+    }
+  }
+
   Widget _buildSelectRow(String number) {
     return InkWell(
-      onTap: () => _goToAmountScreen({"name": "", "number": number, "initials": ""}),
+      onTap: () => _fetchTitleAndGo(number),
       child: Column(
         children: [
           Padding(
