@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Required for the status bar styling
+import 'package:flutter/services.dart';
+import 'package:video_player/video_player.dart';
 import 'main_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -11,44 +12,59 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  late VideoPlayerController _controller;
+
   @override
   void initState() {
     super.initState();
-    // Navigate to the main screen right after the first frame is rendered.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _navigateToHome();
-    });
+    _controller = VideoPlayerController.asset('assets/splash.mp4')
+      ..initialize().then((_) {
+        // AS SOON as video is loaded, play it. No artificial delay.
+        setState(() {});
+        _controller.play();
+
+        // Navigate exactly when the video finishes
+        Timer(_controller.value.duration, _navigateToHome);
+      });
   }
 
   void _navigateToHome() {
-    if (mounted) {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
-      );
-    }
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 500),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This will just show a black screen for a moment before navigating.
-    return const AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
         statusBarColor: Colors.black,
         statusBarIconBrightness: Brightness.light,
         systemNavigationBarColor: Colors.black,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.black, // Background is always black
         body: SafeArea(
           child: Center(
-            child: SizedBox.shrink(),
+            child: _controller.value.isInitialized
+                ? AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: VideoPlayer(_controller),
+            )
+                : Container(),
           ),
         ),
       ),

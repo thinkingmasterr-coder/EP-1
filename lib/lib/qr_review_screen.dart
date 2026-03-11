@@ -112,7 +112,7 @@ class QrReviewScreen extends StatelessWidget {
                     children: [
                       Text('Store Name',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
-                      Text('AK MOBILE CENTRE CHD',
+                      Text('ZAID COLD DRINKS',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
                     ],
                   ),
@@ -195,7 +195,7 @@ class QrReviewScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => QrProcessingScreen(
                         amount: amount,
-                        recipientName: "AK MOBILE CENTER CHD",
+                        recipientName: "ZAID COLD DRINKS",
                         recipientLocation: "Charsadda",
                       ),
                     ),

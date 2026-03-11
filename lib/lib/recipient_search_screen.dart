@@ -28,6 +28,40 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
     );
   }
 
+  Widget _buildHighlightedText(String text, String query, TextStyle style) {
+    if (query.isEmpty) {
+      return Text(text, style: style);
+    }
+
+    final lowerCaseText = text.toLowerCase();
+    final lowerCaseQuery = query.toLowerCase();
+    final startIndex = lowerCaseText.indexOf(lowerCaseQuery);
+
+    if (startIndex == -1) {
+      return Text(text, style: style);
+    }
+
+    final endIndex = startIndex + query.length;
+
+    final before = text.substring(0, startIndex);
+    final highlighted = text.substring(startIndex, endIndex);
+    final after = text.substring(endIndex);
+
+    return RichText(
+      text: TextSpan(
+        style: style,
+        children: [
+          TextSpan(text: before),
+          TextSpan(
+            text: highlighted,
+            style: style.copyWith(backgroundColor: Colors.yellow),
+          ),
+          TextSpan(text: after),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // FIXED: Added .value to access the list inside the notifier
@@ -178,14 +212,16 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              _buildHighlightedText(
                                 contact["name"]!,
-                                style: RecipientExperiments.contactName,
+                                searchQuery,
+                                RecipientExperiments.contactName,
                               ),
                               const SizedBox(height: 1),
-                              Text(
+                              _buildHighlightedText(
                                 contact["number"]!,
-                                style: RecipientExperiments.contactNumber,
+                                searchQuery,
+                                RecipientExperiments.contactNumber,
                               ),
                             ],
                           ),

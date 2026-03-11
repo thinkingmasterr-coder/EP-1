@@ -1,8 +1,10 @@
-// File: lib/qr_processing_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:audioplayers/audioplayers.dart'; // <--- IMPORT THIS
+import 'package:audioplayers/audioplayers.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'models/transaction_model.dart';
 import 'user_data.dart';
 import 'qr_receipt_screen.dart';
 
@@ -47,7 +49,7 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
   Timer? _animTimer;
 
   // Audio Player Instance
-  final AudioPlayer _audioPlayer = AudioPlayer(); // <--- NEW PLAYER
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   // Cache lists
   final List<ImageProvider> _cachedSendingFrames = [];
@@ -62,6 +64,10 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
   }
 
   void _prepareAssets() {
+    // Pre-cache other assets
+    precacheImage(const AssetImage('assets/qr_code1.png'), context);
+    precacheImage(const AssetImage('assets/reciept_img.png'), context);
+
     // Load Sending Frames
     for (int i = 1; i <= sendingTotalFrames; i++) {
       String number = i.toString().padLeft(3, '0');
@@ -98,8 +104,10 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
   }
 
   Future<void> _triggerSuccess() async {
-    double amountDouble = double.tryParse(widget.amount) ?? 0.0;
+    double amountDouble = double.tryParse(widget.amount.replaceAll(',', '')) ?? 0.0;
     UserData.deductBalance(amountDouble);
+
+    await _saveTransaction();
 
     // PLAY SOUND
     try {
@@ -114,6 +122,25 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
 
     // Start the Confetti Animation
     _startConfettiFlipbook();
+  }
+
+  Future<void> _saveTransaction() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newTransaction = TransactionModel(
+      type: 'Raast QR Payment',
+      bankName: 'easypaisa',
+      receiverName: widget.recipientName,
+      contactNumber: '',
+      dateTime: DateTime.now(),
+      amount: double.tryParse(widget.amount.replaceAll(',', '')) ?? 0.0,
+      isSent: true,
+    );
+
+    final String? transactionsString = prefs.getString('transactions');
+    List<dynamic> transactions = transactionsString != null ? jsonDecode(transactionsString) : [];
+    transactions.add(newTransaction.toJson());
+
+    await prefs.setString('transactions', jsonEncode(transactions));
   }
 
   // --- ANIMATION 2: CONFETTI ---
@@ -133,7 +160,7 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
   void _goToReceipt() {
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.8),
+      barrierColor: Colors.black87,
       builder: (BuildContext context) {
         return QrReceiptScreen(
           amount: widget.amount,
@@ -146,7 +173,7 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
   @override
   void dispose() {
     _animTimer?.cancel();
-    _audioPlayer.dispose(); // <--- DISPOSE PLAYER
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -245,10 +272,16 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
               const SizedBox(width: 4),
 
               // Main Amount
-              Text(
-                formatCurrency.format(double.tryParse(widget.amount) ?? 0.0),
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 45, fontWeight: FontWeight.bold, height: 1.2),
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: double.tryParse(widget.amount.replaceAll(',', '')) ?? 0.0),
+                duration: const Duration(milliseconds: 920), // Slower animation
+                builder: (context, value, child) {
+                  return Text(
+                    formatCurrency.format(value), // Format with commas
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 45, fontWeight: FontWeight.bold, height: 1.2),
+                  );
+                },
               ),
 
               // .00 Exponent Style
@@ -304,9 +337,7 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
         _buildBottomAction(
             icon: const Icon(Icons.share, color: Colors.black54),
             text: "Share",
-            onTap: () {
-              print("Share clicked");
-            }
+            onTap: () {}
         ),
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
 
@@ -324,12 +355,10 @@ class _QrProcessingScreenState extends State<QrProcessingScreen> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        // CHANGED: Reduced vertical padding from 16 to 4 (Thinner)
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         color: Colors.white,
         child: Row(
           children: [
-            // CHANGED: Increased size from 35 to 42 (Bigger Icon/Image)
             SizedBox(width: 42, height: 42, child: icon),
             const SizedBox(width: 15),
             Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),

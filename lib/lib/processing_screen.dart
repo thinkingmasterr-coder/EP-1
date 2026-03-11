@@ -1,7 +1,10 @@
-// File: lib/processing_screen.dart
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
+import 'models/transaction_model.dart';
 import 'amount_experiments.dart';
 import 'user_data.dart';
 import 'receipt_screen.dart';
@@ -62,6 +65,9 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   }
 
   void _prepareAssets() {
+    // Pre-cache other assets
+    precacheImage(const AssetImage('assets/reciept_img.png'), context);
+
     // Load Sending Frames
     for (int i = 1; i <= sendingTotalFrames; i++) {
       String number = i.toString().padLeft(3, '0');
@@ -101,6 +107,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     double amountDouble = double.tryParse(widget.amount) ?? 0.0;
     UserData.deductBalance(amountDouble);
 
+    await _saveTransaction();
+
     // --- FIXED AUDIO LOGIC ---
     // Use the main _audioPlayer instance.
     // Do NOT create a new one and do NOT dispose it here.
@@ -116,6 +124,25 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
     // Start the Confetti Animation
     _startConfettiFlipbook();
+  }
+
+  Future<void> _saveTransaction() async {
+    final prefs = await SharedPreferences.getInstance();
+    final newTransaction = TransactionModel(
+      type: 'Money Transfer',
+      bankName: 'easypaisa',
+      receiverName: widget.contactName,
+      contactNumber: widget.contactNumber,
+      dateTime: DateTime.now(),
+      amount: double.tryParse(widget.amount) ?? 0.0,
+      isSent: true,
+    );
+
+    final String? transactionsString = prefs.getString('transactions');
+    List<dynamic> transactions = transactionsString != null ? jsonDecode(transactionsString) : [];
+    transactions.add(newTransaction.toJson());
+
+    await prefs.setString('transactions', jsonEncode(transactions));
   }
 
   // --- ANIMATION 2: CONFETTI ---
@@ -195,6 +222,8 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
 
   // --- VIEW 2: SUCCESS ---
   Widget _buildSuccessView() {
+    final formatCurrency = NumberFormat('#,##0');
+
     return Column(
       children: [
         const SizedBox(height: 80),
@@ -225,19 +254,25 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 1.0, left: 0),
-                child: const Text(
+              const Padding(
+                padding: EdgeInsets.only(top: 1.0, left: 0),
+                child: Text(
                     AmountExperiments.currencySymbol,
                     style: AmountExperiments.currencyStyle
                 ),
               ),
               const SizedBox(width: 2),
 
-              Text(
-                widget.amount,
-                textAlign: TextAlign.center,
-                style: AmountExperiments.inputAmountStyle,
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: double.tryParse(widget.amount) ?? 0.0),
+                duration: const Duration(milliseconds: 920),
+                builder: (context, value, child) {
+                  return Text(
+                    formatCurrency.format(value), // Animate with formatted number
+                    textAlign: TextAlign.center,
+                    style: AmountExperiments.inputAmountStyle,
+                  );
+                },
               ),
 
               const Padding(
@@ -311,7 +346,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             icon: const Icon(Icons.share, color: Colors.black54),
             text: "Share",
             onTap: () {
-              print("Share clicked");
             }
         ),
 

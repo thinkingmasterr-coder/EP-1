@@ -6,6 +6,7 @@ import 'send_menu.dart';
 import 'screens/my_account_screen.dart';
 import 'screens/balance_editor_screen.dart';
 import 'user_data.dart';
+import 'qr_scanner_screen.dart'; // Import the QR scanner screen
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -166,6 +167,21 @@ class _MainScreenState extends State<MainScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const BalanceEditorScreen()),
+                    );
+                  },
+                ),
+
+                // 6. QR Scanner Button (Invisible)
+                _buildInvisibleButton(
+                  top: 655,
+                  left: 135,
+                  width: 100,
+                  height: 50,
+                  label: "QR Scanner",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const QrScannerScreen()),
                     );
                   },
                 ),

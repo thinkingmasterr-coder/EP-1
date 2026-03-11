@@ -68,7 +68,7 @@ class _QrResultScreenState extends State<QrResultScreen> {
                   Image.asset('assets/qr_code1.png', width: 150, height: 150),
                   const SizedBox(height: 10),
                   const Text(
-                    'AK MOBILE CENTRE CHD',
+                    'ZAID COLD DRINKS',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
