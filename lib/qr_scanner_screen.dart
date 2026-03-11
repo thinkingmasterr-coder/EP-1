@@ -2,9 +2,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // <--- Added this import
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'qr_result_screen.dart';
-import 'till_payment_screen.dart'; // <--- Import the Till Screen
+import 'till_payment_screen.dart';
 
 class QrScannerScreen extends StatefulWidget {
   const QrScannerScreen({super.key});
@@ -49,203 +50,213 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        title: const Text(
-          'Scan QR To Make Payment',
-          style: TextStyle(
-              color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+    // APPLIED CHANGE: Wrapped in SystemUiOverlayStyle, Black Container, and SafeArea
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
       ),
-      body: Stack(
-        children: [
-          // 1. The Camera
-          MobileScanner(
-            onDetect: (capture) {
-              if (_hasScanned) return;
-
-              final List<Barcode> barcodes = capture.barcodes;
-              if (barcodes.isNotEmpty) {
-                final String? qrCode = barcodes.first.rawValue;
-                if (qrCode != null) {
-                  setState(() {
-                    _hasScanned = true;
-                  });
-
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => QrResultScreen(qrCode: qrCode),
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-
-          // 2. The Overlay UI
-          Column(
-            children: [
-              // TOP BAR
-              Container(
-                width: double.infinity,
-                color: Colors.black.withOpacity(0.8),
-                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Scan any of the following QR Codes',
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text('digital bank',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                        SizedBox(width: 8),
-                        Text('VISA',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                        SizedBox(width: 8),
-                        Text('MasterCard',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                        SizedBox(width: 8),
-                        Text('Raast',
-                            style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white)),
-                      ],
-                    ),
-                  ],
-                ),
+      child: Container(
+        color: Colors.black,
+        child: SafeArea(
+          child: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                onPressed: () => Navigator.of(context).pop(),
               ),
+              title: const Text(
+                'Scan QR To Make Payment',
+                style: TextStyle(
+                    color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              backgroundColor: Colors.white,
+              elevation: 0,
+            ),
+            body: Stack(
+              children: [
+                // 1. The Camera
+                MobileScanner(
+                  onDetect: (capture) {
+                    if (_hasScanned) return;
 
-              // MIDDLE SECTION
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    final double availableHeight = constraints.maxHeight;
-                    const double boxSize = 250.0;
-                    final double verticalPad = (availableHeight > boxSize)
-                        ? (availableHeight - boxSize) / 2
-                        : 0;
+                    final List<Barcode> barcodes = capture.barcodes;
+                    if (barcodes.isNotEmpty) {
+                      final String? qrCode = barcodes.first.rawValue;
+                      if (qrCode != null) {
+                        setState(() {
+                          _hasScanned = true;
+                        });
 
-                    return Column(
-                      children: [
-                        // Space Above Box
-                        Container(
-                            height: verticalPad,
-                            color: Colors.black.withOpacity(0.5)),
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QrResultScreen(qrCode: qrCode),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
 
-                        // The Row containing the Box
-                        SizedBox(
-                          height: boxSize,
-                          child: Row(
+                // 2. The Overlay UI
+                Column(
+                  children: [
+                    // TOP BAR
+                    Container(
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(0.8),
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Scan any of the following QR Codes',
+                            style: TextStyle(fontSize: 16, color: Colors.white),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: const [
+                              Text('digital bank',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              SizedBox(width: 8),
+                              Text('VISA',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              SizedBox(width: 8),
+                              Text('MasterCard',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              SizedBox(width: 8),
+                              Text('Raast',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // MIDDLE SECTION
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final double availableHeight = constraints.maxHeight;
+                          const double boxSize = 250.0;
+                          final double verticalPad = (availableHeight > boxSize)
+                              ? (availableHeight - boxSize) / 2
+                              : 0;
+
+                          return Column(
                             children: [
-                              // Left of Box
-                              Expanded(
-                                  child: Container(
-                                      color: Colors.black.withOpacity(0.5))),
-
-                              // THE SCANNER BOX
+                              // Space Above Box
                               Container(
-                                width: boxSize,
-                                height: boxSize,
-                                color: Colors.transparent,
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    // The 4 Green Corners
-                                    _buildCorner(true, true),
-                                    _buildCorner(true, false),
-                                    _buildCorner(false, true),
-                                    _buildCorner(false, false),
+                                  height: verticalPad,
+                                  color: Colors.black.withOpacity(0.5)),
 
-                                    // The Flickering Red Line
-                                    AnimatedOpacity(
-                                      opacity: _showRedLine ? 1.0 : 0.0,
-                                      duration: const Duration(milliseconds: 200),
-                                      child: Container(
-                                        width: 250,
-                                        height: 2,
-                                        decoration: BoxDecoration(
-                                          color: Colors.red,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.red.withOpacity(0.5),
-                                              blurRadius: 10,
-                                              spreadRadius: 2,
-                                            )
-                                          ],
-                                        ),
+                              // The Row containing the Box
+                              SizedBox(
+                                height: boxSize,
+                                child: Row(
+                                  children: [
+                                    // Left of Box
+                                    Expanded(
+                                        child: Container(
+                                            color: Colors.black.withOpacity(0.5))),
+
+                                    // THE SCANNER BOX
+                                    Container(
+                                      width: boxSize,
+                                      height: boxSize,
+                                      color: Colors.transparent,
+                                      child: Stack(
+                                        alignment: Alignment.center,
+                                        children: [
+                                          // The 4 Green Corners
+                                          _buildCorner(true, true),
+                                          _buildCorner(true, false),
+                                          _buildCorner(false, true),
+                                          _buildCorner(false, false),
+
+                                          // The Flickering Red Line
+                                          AnimatedOpacity(
+                                            opacity: _showRedLine ? 1.0 : 0.0,
+                                            duration: const Duration(milliseconds: 200),
+                                            child: Container(
+                                              width: 250,
+                                              height: 2,
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.red.withOpacity(0.5),
+                                                    blurRadius: 10,
+                                                    spreadRadius: 2,
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
+
+                                    // Right of Box
+                                    Expanded(
+                                        child: Container(
+                                            color: Colors.black.withOpacity(0.5))),
                                   ],
                                 ),
                               ),
 
-                              // Right of Box
+                              // Space Below Box
                               Expanded(
                                   child: Container(
                                       color: Colors.black.withOpacity(0.5))),
                             ],
-                          ),
-                        ),
-
-                        // Space Below Box
-                        Expanded(
-                            child: Container(
-                                color: Colors.black.withOpacity(0.5))),
-                      ],
-                    );
-                  },
-                ),
-              ),
-
-              // BOTTOM BAR
-              Container(
-                width: double.infinity,
-                color: Colors.black.withOpacity(0.8),
-                padding: const EdgeInsets.only(
-                    top: 20, bottom: 30, left: 16, right: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // [CHANGED] Using asset path for the Till Icon
-                    _buildBottomNavItem(
-                      'assets/till_icon.png', // <--- REPLACE THIS WITH YOUR IMAGE
-                      'Enter Till\nNumber',
-                      onTap: () {
-                        // Navigate to Till Payment Screen
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const TillPaymentScreen())
-                        );
-                      },
+                          );
+                        },
+                      ),
                     ),
-                    _buildBottomNavItem(Icons.image, 'Scan from\nGallery'),
-                    _buildBottomNavItem(
-                        Icons.receipt_long, 'Refund\nManagement'),
-                    _buildBottomNavItem(Icons.more_horiz, 'More'),
+
+                    // BOTTOM BAR
+                    Container(
+                      width: double.infinity,
+                      color: Colors.black.withOpacity(0.8),
+                      padding: const EdgeInsets.only(
+                          top: 20, bottom: 30, left: 16, right: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildBottomNavItem(
+                            'assets/till_icon.png',
+                            'Enter Till\nNumber',
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const TillPaymentScreen())
+                              );
+                            },
+                          ),
+                          _buildBottomNavItem(Icons.image, 'Scan from\nGallery'),
+                          _buildBottomNavItem(
+                              Icons.receipt_long, 'Refund\nManagement'),
+                          _buildBottomNavItem(Icons.more_horiz, 'More'),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -275,23 +286,19 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
     );
   }
 
-  // [CHANGED] Now accepts dynamic iconOrAsset (IconData OR String)
   Widget _buildBottomNavItem(dynamic iconOrAsset, String label, {VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // LOGIC: Check if it's an IconData or a String (Asset Path)
           if (iconOrAsset is IconData)
             Icon(iconOrAsset, color: Colors.white, size: 30)
           else if (iconOrAsset is String)
-          // Render the transparent image
             Image.asset(
               iconOrAsset,
               width: 30,
               height: 30,
-              // Note: We don't set color here so the image keeps its original colors
               fit: BoxFit.contain,
             ),
 

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Required for the status bar styling
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'main_screen.dart';
 
@@ -13,21 +13,14 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   late VideoPlayerController _controller;
-  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _initializeVideo();
-  }
-
-  void _initializeVideo() {
     _controller = VideoPlayerController.asset('assets/splash.mp4')
       ..initialize().then((_) {
-        setState(() {
-          _initialized = true;
-        });
-
+        // AS SOON as video is loaded, play it. No artificial delay.
+        setState(() {});
         _controller.play();
 
         // Navigate exactly when the video finishes
@@ -55,26 +48,23 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Force the System UI (Status Bar & Nav Bar) to be BLACK
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.black,          // Top Strip
-        statusBarIconBrightness: Brightness.light, // White Battery/Wifi icons
-        systemNavigationBarColor: Colors.black, // Bottom Strip
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.black,
         systemNavigationBarIconBrightness: Brightness.light,
       ),
       child: Scaffold(
-        backgroundColor: Colors.black, // This fills the empty space
-
-        // 2. The SafeArea adds the "Black Strips" you asked for
+        backgroundColor: Colors.black, // Background is always black
         body: SafeArea(
           child: Center(
-            child: _initialized
+            child: _controller.value.isInitialized
                 ? AspectRatio(
               aspectRatio: _controller.value.aspectRatio,
               child: VideoPlayer(_controller),
             )
-                : Container(), // Stay black while loading
+                : Container(),
           ),
         ),
       ),

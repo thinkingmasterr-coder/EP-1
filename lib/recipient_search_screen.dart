@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'user_data.dart';
 import 'amount_screen.dart';
-import 'recipient_experiments.dart'; // <--- WIRED UP
+import 'recipient_experiments.dart';
 
 class RecipientSearchScreen extends StatefulWidget {
   const RecipientSearchScreen({super.key});
@@ -28,9 +28,86 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
     );
   }
 
+  Widget _buildSelectRow(String number) {
+    return InkWell(
+      onTap: () => _goToAmountScreen({"name": "", "number": number, "initials": ""}),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: RecipientExperiments.avatarSize,
+                  height: RecipientExperiments.avatarSize,
+                  child: Center(
+                    child: Text(
+                      "Select",
+                      style: TextStyle(
+                        color: Color(0xFF00AA4F),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 15),
+                Expanded(
+                  child: Text(
+                    number,
+                    style: RecipientExperiments.contactName,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20),
+            child: Divider(color: Colors.black12, height: 1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHighlightedText(String text, String query, TextStyle style) {
+    if (query.isEmpty) {
+      return Text(text, style: style);
+    }
+
+    final lowerCaseText = text.toLowerCase();
+    final lowerCaseQuery = query.toLowerCase();
+    final startIndex = lowerCaseText.indexOf(lowerCaseQuery);
+
+    if (startIndex == -1) {
+      return Text(text, style: style);
+    }
+
+    final endIndex = startIndex + query.length;
+
+    final before = text.substring(0, startIndex);
+    final highlighted = text.substring(startIndex, endIndex);
+    final after = text.substring(endIndex);
+
+    return RichText(
+      text: TextSpan(
+        style: style,
+        children: [
+          TextSpan(text: before),
+          TextSpan(
+            text: highlighted,
+            style: style.copyWith(backgroundColor: Colors.yellow),
+          ),
+          TextSpan(text: after),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final filteredContacts = UserData.contacts.where((contact) {
+    // FIXED: Added .value to access the list inside the notifier
+    final filteredContacts = UserData.contacts.value.where((contact) {
       final number = contact["number"]!;
       final name = contact["name"]!.toLowerCase();
       final query = searchQuery.toLowerCase();
@@ -39,6 +116,24 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
 
     // Sort contacts by name (A-Z)
     filteredContacts.sort((a, b) => a['name']!.toLowerCase().compareTo(b['name']!.toLowerCase()));
+
+    // --- FEATURE LOGIC ---
+    final bool isNumeric = RegExp(r'^\d+$').hasMatch(searchQuery);
+    final bool is11Digits = searchQuery.length == 11 && isNumeric;
+
+    String headerText = "Your easypaisa Contacts";
+    bool showHeader = true;
+
+    if (searchQuery.isNotEmpty) {
+      if (is11Digits) {
+        showHeader = false;
+      } else if (isNumeric) {
+        // Replaced by "Contact not found" until it reaches 11 digits
+        headerText = "Contact not found";
+      } else if (filteredContacts.isEmpty) {
+        headerText = "Contact not found";
+      }
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -85,34 +180,28 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
             ),
             child: Row(
               children: [
-                // A. Green Accent Line
                 Container(
                   width: RecipientExperiments.greenLineWidth,
                   height: double.infinity,
                   color: const Color(0xFF00AA4F),
                 ),
-
-                // B. Input Field
                 Expanded(
                   child: TextField(
                     controller: _searchController,
                     autofocus: true,
                     onChanged: (value) => setState(() => searchQuery = value),
                     keyboardType: TextInputType.text,
-                    // Use center alignment + contentPadding from experiment file
                     textAlignVertical: TextAlignVertical.center,
                     style: RecipientExperiments.inputTextStyle,
                     decoration: const InputDecoration(
                       border: InputBorder.none,
-                      isDense: true, // Helps with strict vertical alignment
+                      isDense: true,
                       contentPadding: RecipientExperiments.inputContentPadding,
                       hintText: "Enter Number or Search Contacts",
                       hintStyle: RecipientExperiments.hintTextStyle,
                     ),
                   ),
                 ),
-
-                // C. Right Arrow Button
                 Container(
                   margin: const EdgeInsets.only(right: 8),
                   width: 32,
@@ -133,16 +222,20 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
 
           const SizedBox(height: 10),
 
-          // --- 3. CONTACTS HEADING (Grey Bar) ---
-          Container(
-            width: double.infinity,
-            color: RecipientExperiments.headerBgColor,
-            padding: RecipientExperiments.headerPadding,
-            child: const Text(
-              "Your easypaisa Contacts",
-              style: RecipientExperiments.headerText,
+          // --- 3. CONTACTS HEADING ---
+          if (showHeader)
+            Container(
+              width: double.infinity,
+              color: RecipientExperiments.headerBgColor,
+              padding: RecipientExperiments.headerPadding,
+              child: Text(
+                headerText,
+                style: RecipientExperiments.headerText,
+              ),
             ),
-          ),
+
+          // --- FEATURE: SPECIAL SELECT ROW ---
+          if (is11Digits) _buildSelectRow(searchQuery),
 
           // --- 4. CONTACT LIST ---
           Expanded(
@@ -160,7 +253,6 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
                     onTap: () => _goToAmountScreen(contact),
                     child: Row(
                       children: [
-                        // Left: Avatar
                         Container(
                           width: RecipientExperiments.avatarSize,
                           height: RecipientExperiments.avatarSize,
@@ -179,28 +271,25 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
                             ),
                           ),
                         ),
-
                         const SizedBox(width: 15),
-
-                        // Center: Name & Number
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              _buildHighlightedText(
                                 contact["name"]!,
-                                style: RecipientExperiments.contactName,
+                                searchQuery,
+                                RecipientExperiments.contactName,
                               ),
                               const SizedBox(height: 1),
-                              Text(
+                              _buildHighlightedText(
                                 contact["number"]!,
-                                style: RecipientExperiments.contactNumber,
+                                searchQuery,
+                                RecipientExperiments.contactNumber,
                               ),
                             ],
                           ),
                         ),
-
-                        // Right: easypaisa Logo
                         _buildEasyPaisaLogo(),
                       ],
                     ),

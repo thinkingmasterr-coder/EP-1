@@ -1,10 +1,7 @@
-// File: lib/qr_receipt_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:math';
-import 'main.dart'; // Ensure this points to your main app file for navigation
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'dart:math';
 
 class QrReceiptScreen extends StatefulWidget {
   final String amount;
@@ -128,7 +125,7 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
                     right: receiptHorizontalMargin,
                   ),
                   child: ClipPath(
-                    clipper: QrReceiptClipper(), // Using the local clipper
+                    clipper: ReceiptClipper(), // Using the local clipper
                     child: Container(
                       decoration: const BoxDecoration(
                         color: Colors.white,
@@ -160,32 +157,10 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
                                         ),
                                         SizedBox(height: spaceBetweenTickAndText),
 
-                                        // --- EASYPAISA LOGO TEXT ---
-                                        Stack(
-                                          alignment: Alignment.center,
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            Text(
-                                              "easypaisa",
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: easypaisaFontSize,
-                                                letterSpacing: -1,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            Transform.translate(
-                                              offset: const Offset(greenDotX, greenDotY),
-                                              child: Container(
-                                                height: greenDotSize,
-                                                width: greenDotSize,
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFF00C853),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                        // --- EASYPAISA LOGO ---
+                                        Image.asset(
+                                          'assets/re_ep.jpg',
+                                          height: 30,
                                         ),
 
                                         SizedBox(height: spaceBetweenTextLines),
@@ -396,25 +371,35 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
   }
 }
 
-// Include the Clipper directly here to ensure it works standalone
-class QrReceiptClipper extends CustomClipper<Path> {
+class ReceiptClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = Path();
-    path.lineTo(0, size.height);
-
-    // Bottom Zig Zag
+    double bumpWidth = 4.0;
+    double gapWidth = 5.0;
+    double toothHeight = 1.5;
+    path.moveTo(0, toothHeight);
     double x = 0;
-    double y = size.height;
-    double increment = 10;
-
     while (x < size.width) {
-      x += increment;
-      y = (y == size.height) ? size.height - 8 : size.height;
-      path.lineTo(x, y);
-    }
+      path.relativeQuadraticBezierTo(bumpWidth / 2, -toothHeight * 2, bumpWidth, 0);
+      x += bumpWidth;
 
-    path.lineTo(size.width, 0);
+      if (x >= size.width) break;
+      path.relativeLineTo(gapWidth, 0);
+      x += gapWidth;
+    }
+    path.lineTo(size.width, toothHeight);
+    path.lineTo(size.width, size.height - toothHeight);
+    x = size.width;
+    while (x > 0) {
+      path.relativeQuadraticBezierTo(-bumpWidth / 2, toothHeight * 2, -bumpWidth, 0);
+      x -= bumpWidth;
+
+      if (x <= 0) break;
+      path.relativeLineTo(-gapWidth, 0);
+      x -= gapWidth;
+    }
+    path.lineTo(0, toothHeight);
     path.close();
     return path;
   }

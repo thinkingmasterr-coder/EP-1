@@ -88,7 +88,7 @@ class TillProcessingScreen extends StatelessWidget {
                     children: [
                       Text('Merchant Name',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
-                      Text('AK MOBILE CENTRE CHD',
+                      Text('ZAID COLD DRINKS',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
                     ],
                   ),
@@ -192,7 +192,7 @@ class TillProcessingScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => QrProcessingScreen(
                         amount: amount,
-                        recipientName: "AK MOBILE CENTER CHD",
+                        recipientName: "ZAID COLD DRINKS",
                         recipientLocation: "Till Payment",
                       ),
                     ),

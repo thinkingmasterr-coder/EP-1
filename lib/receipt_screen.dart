@@ -1,4 +1,3 @@
-// File: lib/receipt_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
@@ -23,7 +22,6 @@ class ReceiptScreen extends StatefulWidget {
 }
 
 class _ReceiptScreenState extends State<ReceiptScreen> {
-  // Variable to store the real name
   String _accountDetailsName = "Unknown Name";
 
   @override
@@ -32,18 +30,15 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     _fetchAccountDetails();
   }
 
-  // Logic to find the contact by phone number
   void _fetchAccountDetails() {
     try {
-      final contact = UserData.contacts.firstWhere(
+      final contact = UserData.contacts.value.firstWhere(
             (c) => c['number'] == widget.contactNumber,
       );
-      // Use the accountTitle if available, otherwise fallback to the nickname (contactName)
       setState(() {
         _accountDetailsName = contact['accountTitle'] ?? widget.contactName;
       });
     } catch (e) {
-      // If number not found in saved contacts, default to the name passed in
       setState(() {
         _accountDetailsName = widget.contactName;
       });
@@ -75,9 +70,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // ===============================================================
-    // --- MANUAL CONTROLS ---
-    // ===============================================================
     const Color headingColor = Color(0xFF505050);
     const double headerTextVerticalShift = -17.0;
     const double headerTextHorizontalShift = 0.0;
@@ -95,7 +87,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     const double greenDotY = -8.8;
     const double greenDotSize = 5.5;
     const double walletImageSize = 30.0;
-    // ---------------------------------------------------------------
     const double receiptHeightFactor = 0.90;
     const double receiptBottomOffset = 20.0;
     const double receiptHorizontalMargin = 13.0;
@@ -105,7 +96,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     const double transactionSuccessfulFontSize = 26.0;
     const double headingSubTextSpacing = 0.5;
     const double subTextLetterSpacing = -0.6;
-    // ===============================================================
 
     final double calculatedHeight = screenHeight * receiptHeightFactor;
 
@@ -147,7 +137,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                       ),
                       child: Column(
                         children: [
-                          // --- HEADER ---
                           Container(
                             width: double.infinity,
                             color: const Color(0xFFF8F8F8),
@@ -171,37 +160,15 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                                           child: Icon(Icons.check, color: Colors.white, size: tickIconSize),
                                         ),
                                         SizedBox(height: spaceBetweenTickAndText),
-                                        Stack(
-                                          alignment: Alignment.center,
-                                          clipBehavior: Clip.none,
-                                          children: [
-                                            Text(
-                                              "easypaisa",
-                                              style: GoogleFonts.poppins(
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: easypaisaFontSize,
-                                                letterSpacing: -1,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            Transform.translate(
-                                              offset: const Offset(greenDotX, greenDotY),
-                                              child: Container(
-                                                height: greenDotSize,
-                                                width: greenDotSize,
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFF00C853),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                        Image.asset(
+                                          'assets/re_ep.jpg',
+                                          height: 30,
                                         ),
                                         SizedBox(height: spaceBetweenTextLines),
-                                        Text(
+                                        const Text(
                                           "Transaction Successful",
                                           style: TextStyle(
-                                              color: const Color(0xFF00C853),
+                                              color: Color(0xFF00C853),
                                               fontSize: transactionSuccessfulFontSize,
                                               fontWeight: FontWeight.bold
                                           ),
@@ -237,7 +204,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
                             ),
                           ),
 
-                          // --- BODY ---
                           Expanded(
                             child: Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -256,7 +222,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   const SizedBox(height: 12.0),
 
-                                  // Funding Source
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
@@ -283,21 +248,18 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   const Spacer(flex: 3),
 
-                                  // Fields
                                   _buildCleanField("Sent to", widget.contactName, subValue: widget.contactNumber, headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 2.0),
 
                                   const SizedBox(height: 10),
 
-                                  // Account Details (Name from UserData)
                                   _buildCleanField("Account Details", _accountDetailsName, headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 2.0),
 
                                   const SizedBox(height: 10),
 
-                                  // [UPDATED] Sent by: IFTIKHAR KHAN
                                   _buildCleanField(
                                       "Sent by",
-                                      "IFTIKHAR KHAN", // <--- UPDATED
-                                      subValue: "03125534518", // <--- UPDATED
+                                      "IFTIKHAR KHAN",
+                                      subValue: "03125534518",
                                       subValueTopPadding: sentByNumberTopPadding,
                                       headingColor: headingColor,
                                       headingFontSize: headingFontSize,
@@ -308,7 +270,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   SizedBox(height: spaceBeforeAmountField),
 
-                                  _buildCleanField("Amount", "${widget.amount}.00", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 3.0),
+                                  _buildCleanField("Amount", "Rs. ${widget.amount}.00", headingColor: headingColor, headingFontSize: headingFontSize, subTextFontSize: subTextFontSize, headingSubTextSpacing: headingSubTextSpacing, subTextLetterSpacing: subTextLetterSpacing, labelVerticalOffset: 3.0),
 
                                   SizedBox(height: gapBeforeFeeField),
 
@@ -319,7 +281,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   const Spacer(flex: 4),
 
-                                  // Total Section
                                   Transform.translate(
                                     offset: Offset(0, totalSectionVerticalShift),
                                     child: Column(
@@ -350,7 +311,6 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   const Spacer(flex: 2),
 
-                                  // Footer Icons
                                   Padding(
                                     padding: const EdgeInsets.only(bottom: 5.0),
                                     child: Row(
@@ -424,15 +384,10 @@ class ReceiptClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     Path path = Path();
-
-    // ADJUSTABLE SETTINGS
     double bumpWidth = 4.0;
     double gapWidth = 5.0;
     double toothHeight = 1.5;
-
-    // --- TOP EDGE ---
     path.moveTo(0, toothHeight);
-
     double x = 0;
     while (x < size.width) {
       path.relativeQuadraticBezierTo(bumpWidth / 2, -toothHeight * 2, bumpWidth, 0);
@@ -443,11 +398,7 @@ class ReceiptClipper extends CustomClipper<Path> {
       x += gapWidth;
     }
     path.lineTo(size.width, toothHeight);
-
-    // Right Edge
     path.lineTo(size.width, size.height - toothHeight);
-
-    // --- BOTTOM EDGE ---
     x = size.width;
     while (x > 0) {
       path.relativeQuadraticBezierTo(-bumpWidth / 2, toothHeight * 2, -bumpWidth, 0);
@@ -457,10 +408,7 @@ class ReceiptClipper extends CustomClipper<Path> {
       path.relativeLineTo(-gapWidth, 0);
       x -= gapWidth;
     }
-
-    // Left Edge
     path.lineTo(0, toothHeight);
-
     path.close();
     return path;
   }

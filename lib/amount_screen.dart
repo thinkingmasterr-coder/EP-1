@@ -137,7 +137,9 @@ class _AmountScreenState extends State<AmountScreen> {
                           ),
                           alignment: Alignment.center,
                           child: Text(
-                            widget.contactInitials ?? widget.contactName[0],
+                            (widget.contactInitials != null && widget.contactInitials!.isNotEmpty)
+                                ? widget.contactInitials!
+                                : (widget.contactName.isNotEmpty ? widget.contactName[0] : ""),
                             style: AmountExperiments.receiverInitialsStyle,
                           ),
                         ),
@@ -147,7 +149,8 @@ class _AmountScreenState extends State<AmountScreen> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(widget.contactName, style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
+                            if (widget.contactName.isNotEmpty)
+                              Text(widget.contactName, style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
                             Text(widget.contactNumber, style: const TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.w500)),
                           ],
                         ),

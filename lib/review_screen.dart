@@ -20,7 +20,8 @@ class ReviewScreen extends StatelessWidget {
     // 1. Logic to find the real Account Title
     String accountTitle = contactName; // Default fallback
     try {
-      final contact = UserData.contacts.firstWhere(
+      // FIXED: Use .value to access the list from the ValueNotifier
+      final contact = UserData.contacts.value.firstWhere(
             (c) => c['number'] == contactNumber,
       );
       // If we found a specific Account Title, use it. Otherwise use the saved name.

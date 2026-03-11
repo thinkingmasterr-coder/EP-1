@@ -22,7 +22,19 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     double yOffset = 40.0;
 
     // 2. Adjust this to match the invisible button to the image
-    double buttonTopPosition = 640.0;
+    double buttonTopPosition = 493.0;
+
+    // 3. Green tab controls
+    double tabWidth = 120.0;
+    double tabHeight = 50.0;
+    double tabTopPosition = 180.0;
+    double tabLeftPosition = 108.0;
+
+    // 4. White tab controls
+    double whiteTabWidth = 99.0;
+    double whiteTabHeight = 20.0; // Reduced height
+    double whiteTabTopPosition = 340.0;
+    double whiteTabLeftPosition = 67.0;
     // ==========================================================
 
     return Scaffold(
@@ -66,6 +78,73 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 MaterialPageRoute(builder: (context) => const HistoryScreen()),
               );
             },
+          ),
+
+          // 4. IFTIKHAR KHAN Tab
+          Positioned(
+            top: tabTopPosition,
+            left: tabLeftPosition,
+            child: Material(
+              color: const Color(0xFF006E59),
+              borderRadius: BorderRadius.circular(8),
+              child: InkWell(
+                onTap: () {},
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  width: tabWidth,
+                  height: tabHeight,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start, // Left-aligns the content
+                    children: const [
+                      Text(
+                        "IFTIKHAR KHAN",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
+                      ),
+                      SizedBox(height: 4), // Spacing
+                      Text(
+                        "03125534518",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.normal,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 5. White Number Tab
+          Positioned(
+            top: whiteTabTopPosition,
+            left: whiteTabLeftPosition,
+            child: Container(
+              width: whiteTabWidth,
+              height: whiteTabHeight,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.center,
+              child: const Text(
+                "03125534518",
+                style: TextStyle(
+                  color: Color(0xFF8A8A8A), // The perfect in-between gray
+                  fontWeight: FontWeight.w500,
+                  fontSize: 12.0, // 1 point smaller
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ),
           ),
         ],
       ),

@@ -6,6 +6,7 @@ import 'send_menu.dart';
 import 'screens/my_account_screen.dart';
 import 'screens/balance_editor_screen.dart';
 import 'user_data.dart';
+import 'qr_scanner_screen.dart'; // Import the QR scanner screen
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -30,10 +31,10 @@ class _MainScreenState extends State<MainScreen> {
     double settingsButtonTop = 30.0;
     double sendMoneyButtonTop = 255.0;
 
-    // LOCKED COORDINATES FOR BALANCE OVERLAY (From your request)
+    // LOCKED COORDINATES FOR BALANCE OVERLAY
     double balanceTop = 168.0;
     double balanceLeft = 35.0;
-    double balanceWidth = 190.0;
+    double balanceWidth = 190.0; // Increased width slightly to fit 6 spaced stars
     double balanceHeight = 30.0;
 
     // EDITOR BUTTON POSITION
@@ -88,12 +89,7 @@ class _MainScreenState extends State<MainScreen> {
                   height: 100,
                   label: "Send Money",
                   onTap: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      backgroundColor: Colors.transparent,
-                      builder: (context) => const SendMenu(),
-                    );
+                    SendMenu.show(context);
                   },
                 ),
 
@@ -128,9 +124,9 @@ class _MainScreenState extends State<MainScreen> {
                             Text(
                               isBalanceVisible
                                   ? "Rs. ${NumberFormat('#,##0.00').format(value)}"
-                                  : "Rs. ****",
+                                  : "* * * * * *", // 6 stars with spaces, NO "Rs."
                               style: const TextStyle(
-                                color: Color(0xFFEEEEEE), // CHANGED: Slightly less bright white
+                                color: Color(0xFFEEEEEE),
                                 fontSize: 19,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -147,9 +143,9 @@ class _MainScreenState extends State<MainScreen> {
                               },
                               child: Icon(
                                 isBalanceVisible
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                                color: const Color(0xFFEEEEEE), // CHANGED: Matches the text color
+                                    ? Icons.visibility_off_outlined // Slash shown when visible
+                                    : Icons.visibility_outlined,    // Open eye when invisible
+                                color: const Color(0xFFEEEEEE),
                                 size: 20,
                               ),
                             ),
@@ -171,6 +167,21 @@ class _MainScreenState extends State<MainScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const BalanceEditorScreen()),
+                    );
+                  },
+                ),
+
+                // 6. QR Scanner Button (Invisible)
+                _buildInvisibleButton(
+                  top: 655,
+                  left: 135,
+                  width: 100,
+                  height: 50,
+                  label: "QR Scanner",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const QrScannerScreen()),
                     );
                   },
                 ),
