@@ -1,6 +1,7 @@
 // File: lib/screens/my_account_screen.dart
 import 'package:flutter/material.dart';
 import 'history_screen.dart';
+import '../user_data.dart';
 
 class MyAccountScreen extends StatefulWidget {
   const MyAccountScreen({super.key});
@@ -28,13 +29,19 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     double tabWidth = 120.0;
     double tabHeight = 50.0;
     double tabTopPosition = 180.0;
-    double tabLeftPosition = 108.0;
+    double tabLeftPosition = 115.0; // Restored to original position
 
     // 4. White tab controls
     double whiteTabWidth = 99.0;
     double whiteTabHeight = 20.0; // Reduced height
     double whiteTabTopPosition = 340.0;
     double whiteTabLeftPosition = 67.0;
+
+    // 6. IBAN tab controls (New)
+    double ibanTabWidth = 190.0;
+    double ibanTabHeight = 20.0; // Matches white tab thickness
+    double ibanTabTopPosition = 242.0; // Positioned below green tab
+    double ibanTabLeftPosition = 114.0;
     // ==========================================================
 
     return Scaffold(
@@ -80,7 +87,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             },
           ),
 
-          // 4. IFTIKHAR KHAN Tab
+          // 4. User Name Tab (Reactive)
           Positioned(
             top: tabTopPosition,
             left: tabLeftPosition,
@@ -93,37 +100,46 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 child: Container(
                   width: tabWidth,
                   height: tabHeight,
-                  alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start, // Left-aligns the content
-                    children: const [
-                      Text(
-                        "IFTIKHAR KHAN",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
+                  alignment: Alignment.centerLeft, // Align content to the left inside the tab
+                  padding: const EdgeInsets.only(left: 8.0), // Padding to control "push" to left
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: UserData.userName,
+                    builder: (context, name, _) => ValueListenableBuilder<String>(
+                      valueListenable: UserData.userNumber,
+                      builder: (context, number, _) => Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start, // Left-aligns the text rows
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4), // Spacing
+                          Text(
+                            number,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.normal,
+                              letterSpacing: -0.5,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 4), // Spacing
-                      Text(
-                        "03125534518",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.normal,
-                          letterSpacing: -0.5,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
 
-          // 5. White Number Tab
+          // 5. White Number Tab (Reactive)
           Positioned(
             top: whiteTabTopPosition,
             left: whiteTabLeftPosition,
@@ -135,13 +151,41 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               alignment: Alignment.center,
-              child: const Text(
-                "03125534518",
+              child: ValueListenableBuilder<String>(
+                valueListenable: UserData.userNumber,
+                builder: (context, number, _) => Text(
+                  number,
+                  style: const TextStyle(
+                    color: Color(0xFF8A8A8A), // The perfect in-between gray
+                    fontWeight: FontWeight.w500,
+                    fontSize: 12.0, // 1 point smaller
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // 6. Green IBAN Tab
+          Positioned(
+            top: ibanTabTopPosition,
+            left: ibanTabLeftPosition,
+            child: Container(
+              width: ibanTabWidth,
+              height: ibanTabHeight,
+              decoration: BoxDecoration(
+                color: const Color(0xFF006E59),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(
+                "IBAN: PK56GHTH000000003456878",
                 style: TextStyle(
-                  color: Color(0xFF8A8A8A), // The perfect in-between gray
+                  color: Colors.white.withOpacity(0.9), // Slightly lighter white
                   fontWeight: FontWeight.w500,
-                  fontSize: 12.0, // 1 point smaller
-                  letterSpacing: -0.5,
+                  fontSize: 11.0,
+                  letterSpacing: -0.2,
                 ),
               ),
             ),

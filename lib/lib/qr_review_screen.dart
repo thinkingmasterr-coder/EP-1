@@ -2,11 +2,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'qr_processing_screen.dart';
+import 'user_data.dart';
 
 class QrReviewScreen extends StatelessWidget {
   final String amount;
+  final String? storeName; // Added to receive name from result screen
+  final bool isSpecialQr;
 
-  const QrReviewScreen({super.key, required this.amount});
+  const QrReviewScreen({
+    super.key,
+    required this.amount,
+    this.storeName,
+    this.isSpecialQr = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +25,9 @@ class QrReviewScreen extends StatelessWidget {
     final String formattedAmount = currencyFormat.format(amountValue);
     final String formattedTotalAmount =
     currencyFormatWithDecimals.format(amountValue);
+
+    // Use passed storeName or fallback to UserData
+    final String displayStoreName = storeName ?? UserData.qrStoreName.value;
 
     return Scaffold(
       appBar: AppBar(
@@ -44,10 +55,8 @@ class QrReviewScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // CHANGED: Added Spacer here to push everything down
             const Spacer(),
 
-            // Wrapped QR in a Stack to overlay the logo
             Center(
               child: Stack(
                 alignment: Alignment.center,
@@ -57,7 +66,6 @@ class QrReviewScreen extends StatelessWidget {
                     width: 120,
                     height: 120,
                   ),
-                  // The Overlay Logo
                   Container(
                     width: 52,
                     height: 52,
@@ -97,23 +105,23 @@ class QrReviewScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('QR Code Type',
+                      const Text('QR Code Type',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
-                      Text('Raast',
-                          style: TextStyle(color: Colors.black54, fontSize: 13)),
+                      Text(isSpecialQr ? 'Easypaisa' : 'Raast',
+                          style: const TextStyle(color: Colors.black54, fontSize: 13)),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Store Name',
+                      const Text('Store Name',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
-                      Text('ZAID COLD DRINKS',
-                          style: TextStyle(color: Colors.black54, fontSize: 13)),
+                      Text(displayStoreName,
+                          style: const TextStyle(color: Colors.black54, fontSize: 13)),
                     ],
                   ),
                 ],
@@ -145,7 +153,6 @@ class QrReviewScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // --- The "Rectangle" Section (Fee, Tax, Total) ---
             const Divider(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -182,11 +189,8 @@ class QrReviewScreen extends StatelessWidget {
               ),
             ),
             const Divider(),
-            // CHANGED: Removed the Spacer() that was here.
 
             Padding(
-              // CHANGED: Adjusted top padding to 20.0 to create the "little distance" requested.
-              // Bottom padding remains 90.0 to keep the button location fixed.
               padding: const EdgeInsets.only(bottom: 90.0, top: 20.0),
               child: ElevatedButton(
                 onPressed: () {
@@ -195,8 +199,9 @@ class QrReviewScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => QrProcessingScreen(
                         amount: amount,
-                        recipientName: "ZAID COLD DRINKS",
+                        recipientName: displayStoreName,
                         recipientLocation: "Charsadda",
+                        isSpecialQr: isSpecialQr,
                       ),
                     ),
                   );

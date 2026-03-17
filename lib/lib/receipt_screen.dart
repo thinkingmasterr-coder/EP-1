@@ -10,6 +10,7 @@ class ReceiptScreen extends StatefulWidget {
   final String contactName;
   final String contactNumber;
   final String? fetchedAccountTitle;
+  final DateTime? dateTime;
 
   const ReceiptScreen({
     super.key,
@@ -17,6 +18,7 @@ class ReceiptScreen extends StatefulWidget {
     required this.contactName,
     required this.contactNumber,
     this.fetchedAccountTitle,
+    this.dateTime,
   });
 
   @override
@@ -25,11 +27,19 @@ class ReceiptScreen extends StatefulWidget {
 
 class _ReceiptScreenState extends State<ReceiptScreen> {
   String _accountDetailsName = "Unknown Name";
+  late final String _transactionID;
 
   @override
   void initState() {
     super.initState();
     _fetchAccountDetails();
+    // Use the same deterministic ID for the same transaction time if possible
+    if (widget.dateTime != null) {
+      final random = Random(widget.dateTime!.millisecondsSinceEpoch);
+      _transactionID = "ID#${random.nextInt(90000000) + 4000000000}";
+    } else {
+      _transactionID = "ID#${Random().nextInt(90000000) + 4000000000}";
+    }
   }
 
   void _fetchAccountDetails() {
@@ -54,11 +64,9 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
     }
   }
 
-  String get _transactionID => "ID#${Random().nextInt(90000000) + 4000000000}";
-
   String get _displayDate {
-    final now = DateTime.now();
-    return "${now.day.toString().padLeft(2, '0')} ${_getMonth(now.month)} ${now.year}  ${_formatTime(now)}";
+    final date = widget.dateTime ?? DateTime.now();
+    return "${date.day.toString().padLeft(2, '0')} ${_getMonth(date.month)} ${date.year}  ${_formatTime(date)}";
   }
 
   String _getMonth(int month) {
@@ -71,6 +79,7 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
   String _formatTime(DateTime date) {
     int hour = date.hour > 12 ? date.hour - 12 : date.hour;
+    if (hour == 0) hour = 12;
     String amPm = date.hour >= 12 ? "PM" : "AM";
     return "${hour}:${date.minute.toString().padLeft(2, '0')} $amPm";
   }
@@ -265,16 +274,23 @@ class _ReceiptScreenState extends State<ReceiptScreen> {
 
                                   const SizedBox(height: 10),
 
-                                  _buildCleanField(
-                                      "Sent by",
-                                      "IFTIKHAR KHAN",
-                                      subValue: "03125534518",
-                                      subValueTopPadding: sentByNumberTopPadding,
-                                      headingColor: headingColor,
-                                      headingFontSize: headingFontSize,
-                                      subTextFontSize: subTextFontSize,
-                                      headingSubTextSpacing: headingSubTextSpacing,
-                                      subTextLetterSpacing: subTextLetterSpacing
+                                  // FIELD: Sent by (DYNAMIC)
+                                  ValueListenableBuilder<String>(
+                                    valueListenable: UserData.userName,
+                                    builder: (context, name, _) => ValueListenableBuilder<String>(
+                                      valueListenable: UserData.userNumber,
+                                      builder: (context, number, _) => _buildCleanField(
+                                          "Sent by",
+                                          name,
+                                          subValue: number,
+                                          subValueTopPadding: sentByNumberTopPadding,
+                                          headingColor: headingColor,
+                                          headingFontSize: headingFontSize,
+                                          subTextFontSize: subTextFontSize,
+                                          headingSubTextSpacing: headingSubTextSpacing,
+                                          subTextLetterSpacing: subTextLetterSpacing
+                                      ),
+                                    ),
                                   ),
 
                                   SizedBox(height: spaceBeforeAmountField),

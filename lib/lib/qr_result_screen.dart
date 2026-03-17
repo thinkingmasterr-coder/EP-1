@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easypaisa_clone/qr_review_screen.dart';
+import 'user_data.dart';
 
 class QrResultScreen extends StatefulWidget {
   final String qrCode;
@@ -11,10 +12,12 @@ class QrResultScreen extends StatefulWidget {
 }
 
 class _QrResultScreenState extends State<QrResultScreen> {
-  // CHANGE 1: Removed text: '1020', now it starts empty
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   int _messageLength = 0;
+
+  // The special QR code string
+  static const String specialQrCode = "0002010102112876003213bb98ea283b452b9d979bf570fc49ed0108TMICFBPK0224PK50TMFB00000000118677755204539953035865802PK5915ZAHID COLD DRIN6009Charsadda64380002EN0115ZAHID COLD DRIN0209Charsadda62520528OPS1|38563|ZAHID COLD DRINKS030712013180805Other6304B41D";
 
   @override
   void initState() {
@@ -35,6 +38,9 @@ class _QrResultScreenState extends State<QrResultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Logic to determine display name
+    final bool isSpecialQr = widget.qrCode == specialQrCode;
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -61,20 +67,31 @@ class _QrResultScreenState extends State<QrResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // CHANGE 2: Made image smaller (100x100) and added text below
             Center(
               child: Column(
                 children: [
                   Image.asset('assets/qr_code1.png', width: 150, height: 150),
                   const SizedBox(height: 10),
-                  const Text(
-                    'ZAID COLD DRINKS',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
+                  isSpecialQr 
+                    ? const Text(
+                        "ZAHID COLD DRINKS",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      )
+                    : ValueListenableBuilder<String>(
+                        valueListenable: UserData.qrStoreName,
+                        builder: (context, name, _) => Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
                 ],
               ),
             ),
@@ -169,6 +186,8 @@ class _QrResultScreenState extends State<QrResultScreen> {
                     MaterialPageRoute(
                       builder: (context) => QrReviewScreen(
                         amount: _amountController.text,
+                        storeName: isSpecialQr ? "ZAHID COLD DRINKS" : UserData.qrStoreName.value,
+                        isSpecialQr: isSpecialQr,
                       ),
                     ),
                   );

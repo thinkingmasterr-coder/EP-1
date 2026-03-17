@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import 'models/transaction_model.dart';
 import 'amount_experiments.dart';
 import 'user_data.dart';
@@ -29,32 +27,22 @@ class ProcessingScreen extends StatefulWidget {
 
 class _ProcessingScreenState extends State<ProcessingScreen> {
   // --- CONFIGURATION ---
-
-  // 1. ZOOM CONTROLS
   final double sendingZoomScale = 3.6;
   final double successZoomScale = 4.0;
-
-  // 2. PERFORMANCE
   final int cacheWidth = 400;
-
-  // 3. ANIMATION DETAILS
   final int sendingTotalFrames = 28;
   final String sendingFolder = 'assets/frames';
-
   final int confettiTotalFrames = 51;
   final String confettiFolder = 'assets/confetti_frames';
 
   // --- STATE ---
   int _currentSendingFrame = 1;
   int _currentConfettiFrame = 1;
-
   bool _showSuccess = false;
   Timer? _animTimer;
+  DateTime? _transactionTime;
 
-  // Audio Player Instance
   final AudioPlayer _audioPlayer = AudioPlayer();
-
-  // Cache lists
   final List<ImageProvider> _cachedSendingFrames = [];
   final List<ImageProvider> _cachedConfettiFrames = [];
 
@@ -67,10 +55,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   }
 
   void _prepareAssets() {
-    // Pre-cache other assets
     precacheImage(const AssetImage('assets/reciept_img.png'), context);
-
-    // Load Sending Frames
     for (int i = 1; i <= sendingTotalFrames; i++) {
       String number = i.toString().padLeft(3, '0');
       String path = '$sendingFolder/ezgif-frame-$number.png';
@@ -78,8 +63,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
       _cachedSendingFrames.add(provider);
       precacheImage(provider, context);
     }
-
-    // Load Confetti Frames
     for (int i = 1; i <= confettiTotalFrames; i++) {
       String number = i.toString().padLeft(3, '0');
       String path = '$confettiFolder/ezgif-frame-$number.png';
@@ -87,11 +70,9 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
       _cachedConfettiFrames.add(provider);
       precacheImage(provider, context);
     }
-
     _startSendingFlipbook();
   }
 
-  // --- ANIMATION 1: SENDING ---
   void _startSendingFlipbook() {
     _animTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       if (_currentSendingFrame < sendingTotalFrames) {
@@ -109,11 +90,21 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     double amountDouble = double.tryParse(widget.amount) ?? 0.0;
     UserData.deductBalance(amountDouble);
 
-    await _saveTransaction();
+    _transactionTime = DateTime.now();
+    
+    // Create and add the transaction using UserData
+    final newTransaction = TransactionModel(
+      type: 'Money Transfer',
+      bankName: 'easypaisa',
+      receiverName: widget.fetchedAccountTitle ?? widget.contactName,
+      contactNumber: widget.contactNumber,
+      dateTime: _transactionTime!,
+      amount: amountDouble,
+      isSent: true,
+      isDummy: false, // Real transaction
+    );
+    await UserData.addTransaction(newTransaction);
 
-    // --- FIXED AUDIO LOGIC ---
-    // Use the main _audioPlayer instance.
-    // Do NOT create a new one and do NOT dispose it here.
     try {
       await _audioPlayer.play(AssetSource('sounds/success.mp3'));
     } catch (e) {
@@ -123,31 +114,9 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     setState(() {
       _showSuccess = true;
     });
-
-    // Start the Confetti Animation
     _startConfettiFlipbook();
   }
 
-  Future<void> _saveTransaction() async {
-    final prefs = await SharedPreferences.getInstance();
-    final newTransaction = TransactionModel(
-      type: 'Money Transfer',
-      bankName: 'easypaisa',
-      receiverName: widget.fetchedAccountTitle ?? widget.contactName,
-      contactNumber: widget.contactNumber,
-      dateTime: DateTime.now(),
-      amount: double.tryParse(widget.amount) ?? 0.0,
-      isSent: true,
-    );
-
-    final String? transactionsString = prefs.getString('transactions');
-    List<dynamic> transactions = transactionsString != null ? jsonDecode(transactionsString) : [];
-    transactions.add(newTransaction.toJson());
-
-    await prefs.setString('transactions', jsonEncode(transactions));
-  }
-
-  // --- ANIMATION 2: CONFETTI ---
   void _startConfettiFlipbook() {
     _animTimer = Timer.periodic(const Duration(milliseconds: 40), (timer) {
       if (_currentConfettiFrame < confettiTotalFrames) {
@@ -155,12 +124,11 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
           _currentConfettiFrame++;
         });
       } else {
-        _animTimer?.cancel(); // Stop at the last frame
+        _animTimer?.cancel();
       }
     });
   }
 
-  // --- NAVIGATION ACTION ---
   void _goToReceipt() {
     showModalBottomSheet(
       context: context,
@@ -171,6 +139,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
         contactName: widget.contactName,
         contactNumber: widget.contactNumber,
         fetchedAccountTitle: widget.fetchedAccountTitle,
+        dateTime: _transactionTime,
       ),
     );
   }
@@ -178,7 +147,7 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   @override
   void dispose() {
     _animTimer?.cancel();
-    _audioPlayer.dispose(); // Player is properly disposed here when screen closes
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -186,16 +155,12 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: _showSuccess
-          ? _buildSuccessView()
-          : _buildSendingView(),
+      body: _showSuccess ? _buildSuccessView() : _buildSendingView(),
     );
   }
 
-  // --- VIEW 1: SENDING ---
   Widget _buildSendingView() {
     if (_cachedSendingFrames.isEmpty) return const SizedBox();
-
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -223,7 +188,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     );
   }
 
-  // --- VIEW 2: SUCCESS ---
   Widget _buildSuccessView() {
     final formatCurrency = NumberFormat('#,##0');
     final String displayName = widget.fetchedAccountTitle ?? widget.contactName;
@@ -231,8 +195,6 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     return Column(
       children: [
         const SizedBox(height: 80),
-
-        // 1. SCALED & CROPPED ANIMATION
         ClipRect(
           child: Container(
             width: 150,
@@ -240,18 +202,16 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             alignment: Alignment.center,
             child: _cachedConfettiFrames.isNotEmpty
                 ? Transform.scale(
-              scale: 3.0,
-              child: Image(
-                image: _cachedConfettiFrames[_currentConfettiFrame - 1],
-                fit: BoxFit.cover,
-                gaplessPlayback: true,
-              ),
-            )
+                    scale: 3.0,
+                    child: Image(
+                      image: _cachedConfettiFrames[_currentConfettiFrame - 1],
+                      fit: BoxFit.cover,
+                      gaplessPlayback: true,
+                    ),
+                  )
                 : const SizedBox(),
           ),
         ),
-
-        // 2. AMOUNT
         Align(
           alignment: Alignment.center,
           child: Row(
@@ -260,42 +220,30 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             children: [
               const Padding(
                 padding: EdgeInsets.only(top: 1.0, left: 0),
-                child: Text(
-                    AmountExperiments.currencySymbol,
-                    style: AmountExperiments.currencyStyle
-                ),
+                child: Text(AmountExperiments.currencySymbol, style: AmountExperiments.currencyStyle),
               ),
               const SizedBox(width: 2),
-
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0, end: double.tryParse(widget.amount) ?? 0.0),
                 duration: const Duration(milliseconds: 920),
                 builder: (context, value, child) {
                   return Text(
-                    formatCurrency.format(value), // Animate with formatted number
+                    formatCurrency.format(value),
                     textAlign: TextAlign.center,
                     style: AmountExperiments.inputAmountStyle,
                   );
                 },
               ),
-
               const Padding(
                 padding: EdgeInsets.only(top: 17.0, left: 0.0),
-                child: Text(
-                  '.00',
-                  style: AmountExperiments.currencyStyle,
-                ),
+                child: Text('.00', style: AmountExperiments.currencyStyle),
               ),
             ],
           ),
         ),
-
         const SizedBox(height: 5),
-        const Text("Successfully Sent to", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500,)),
-
+        const Text("Successfully Sent to", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500)),
         const SizedBox(height: 30),
-
-        // 3. AVATAR
         Container(
           width: 80,
           height: 80,
@@ -310,72 +258,41 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
             style: const TextStyle(fontSize: 20, color: Colors.black, fontWeight: FontWeight.w400),
           ),
         ),
-
         const SizedBox(height: 15),
-
-        // 4. NAME & NUMBER
-        Text(
-          displayName,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black),
-        ),
-
+        Text(displayName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black)),
         const SizedBox(height: 5),
-
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo Left
             Image.asset('assets/EP_logo.webp', width: 25, height: 25),
-            // CHANGED: Reduced gap from 5 to 2 to bring it closer
             const SizedBox(width: 2),
-            // Number
             Text(widget.contactNumber, style: const TextStyle(color: Colors.black, fontSize: 16)),
           ],
         ),
-
         const SizedBox(height: 40),
-
-        // 5. BOTTOM ACTIONS
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
-
         _buildBottomAction(
             icon: Image.asset('assets/reciept_img.png'),
             text: "View Receipt",
             onTap: _goToReceipt
         ),
-
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
-
-        _buildBottomAction(
-            icon: const Icon(Icons.share, color: Colors.black54),
-            text: "Share",
-            onTap: () {
-            }
-        ),
-
+        _buildBottomAction(icon: const Icon(Icons.share, color: Colors.black54), text: "Share", onTap: () {}),
         const Divider(height: 1, thickness: 1, color: Color(0xFFEEEEEE)),
-
         const Spacer(),
-
         const SizedBox(height: 20),
       ],
     );
   }
 
-  Widget _buildBottomAction({
-    required Widget icon,
-    required String text,
-    required VoidCallback onTap
-  }) {
+  Widget _buildBottomAction({required Widget icon, required String text, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       child: Container(
-        // CHANGED: Reduced vertical padding from 8 to 4 to make it much thinner
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
         color: Colors.white,
         child: Row(
           children: [
-            // CHANGED: Increased container size to 42 for larger icon
             SizedBox(width: 42, height: 42, child: icon),
             const SizedBox(width: 15),
             Text(text, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),

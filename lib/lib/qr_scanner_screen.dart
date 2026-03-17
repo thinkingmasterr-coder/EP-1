@@ -17,6 +17,7 @@ class QrScannerScreen extends StatefulWidget {
 class _QrScannerScreenState extends State<QrScannerScreen> {
   bool _hasScanned = false;
   bool _showRedLine = true;
+  bool _isPaySelected = true; // State for the toggle
 
   @override
   void initState() {
@@ -65,8 +66,9 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 icon: const Icon(Icons.arrow_back, color: Colors.black),
                 onPressed: () => Navigator.of(context).pop(),
               ),
+              centerTitle: true,
               title: const Text(
-                'Scan QR To Make Payment',
+                'RAAST QR Code',
                 style: TextStyle(
                     color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
               ),
@@ -102,7 +104,82 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                 // 2. The Overlay UI
                 Column(
                   children: [
-                    // TOP BAR
+                    // TOGGLE TABS IN THE EXTENDED WHITE AREA
+                    Container(
+                      width: double.infinity,
+                      height: 50.0,
+                      color: Colors.white,
+                      child: Stack(
+                        children: [
+                          // Tab Buttons
+                          Row(
+                            children: [
+                              // Tab 1: Pay or Send Money
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _isPaySelected = true;
+                                    });
+                                  },
+                                  child: Container(
+                                    color: Colors.transparent,
+                                    child: Center(
+                                      child: Text(
+                                        'Pay or Send Money',
+                                        style: TextStyle(
+                                          color: _isPaySelected ? Colors.green : Colors.grey,
+                                          fontWeight: FontWeight.w500, // Thinner than bold
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Tab 2: Receive Money
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _isPaySelected = false;
+                                    });
+                                  },
+                                  child: Container(
+                                    color: Colors.transparent,
+                                    child: Center(
+                                      child: Text(
+                                        'Receive Money',
+                                        style: TextStyle(
+                                          color: !_isPaySelected ? Colors.green : Colors.grey,
+                                          fontWeight: FontWeight.w500, // Thinner than bold
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          // Animated Toggle Line (The "Toggle Feature")
+                          AnimatedAlign(
+                            duration: const Duration(milliseconds: 250),
+                            curve: Curves.easeInOut,
+                            alignment: _isPaySelected ? Alignment.bottomLeft : Alignment.bottomRight,
+                            child: FractionallySizedBox(
+                              widthFactor: 0.5,
+                              child: Container(
+                                height: 3,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // TOP BAR (Restored to original dark color)
                     Container(
                       width: double.infinity,
                       color: Colors.black.withOpacity(0.8),
@@ -114,29 +191,11 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                             style: TextStyle(fontSize: 16, color: Colors.white),
                           ),
                           const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text('digital bank',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                              SizedBox(width: 8),
-                              Text('VISA',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                              SizedBox(width: 8),
-                              Text('MasterCard',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                              SizedBox(width: 8),
-                              Text('Raast',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white)),
-                            ],
+                          // APPLIED CHANGE: Replaced text row with qr_icons image asset
+                          Image.asset(
+                            'assets/qr_icons.jpg',
+                            height: 26, // Increased by 6 points (from 20 to 26)
+                            fit: BoxFit.contain,
                           ),
                         ],
                       ),
@@ -148,6 +207,8 @@ class _QrScannerScreenState extends State<QrScannerScreen> {
                         builder: (context, constraints) {
                           final double availableHeight = constraints.maxHeight;
                           const double boxSize = 250.0;
+                          
+                          // This will center the scanner box in the remaining space.
                           final double verticalPad = (availableHeight > boxSize)
                               ? (availableHeight - boxSize) / 2
                               : 0;

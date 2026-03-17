@@ -1,7 +1,8 @@
-// File: lib/lib/till_processing_screen.dart
+// File: lib/till_processing_screen.dart
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'qr_processing_screen.dart';
+import 'user_data.dart';
 
 class TillProcessingScreen extends StatelessWidget {
   final String amount;
@@ -23,6 +24,8 @@ class TillProcessingScreen extends StatelessWidget {
     final String formattedTotalAmount = currencyFormatWithDecimals.format(amountValue);
 
     return Scaffold(
+      // Prevents the "error screen" glitch by not resizing when keyboard is active during transition
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
@@ -83,19 +86,22 @@ class TillProcessingScreen extends StatelessWidget {
                   const SizedBox(height: 12),
 
                   // Merchant Name
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Merchant Name',
+                      const Text('Merchant Name',
                           style: TextStyle(color: Colors.black54, fontSize: 13)),
-                      Text('ZAID COLD DRINKS',
-                          style: TextStyle(color: Colors.black54, fontSize: 13)),
+                      ValueListenableBuilder<String>(
+                        valueListenable: UserData.qrStoreName,
+                        builder: (context, name, _) => Text(name,
+                            style: const TextStyle(color: Colors.black54, fontSize: 13)),
+                      ),
                     ],
                   ),
 
                   const SizedBox(height: 8),
 
-                  // Till Number (Dynamic)
+                  // Till Number (Dynamic - now using the passed tillNumber)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -180,8 +186,6 @@ class TillProcessingScreen extends StatelessWidget {
             const Divider(),
 
             // 6. BUTTON POSITIONING (Matches QrReviewScreen EXACTLY)
-            // No Spacer() here anymore.
-
             Padding(
               padding: const EdgeInsets.only(bottom: 90.0, top: 20.0),
               child: ElevatedButton(
@@ -192,7 +196,7 @@ class TillProcessingScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => QrProcessingScreen(
                         amount: amount,
-                        recipientName: "ZAID COLD DRINKS",
+                        recipientName: UserData.qrStoreName.value,
                         recipientLocation: "Till Payment",
                       ),
                     ),
@@ -200,7 +204,7 @@ class TillProcessingScreen extends StatelessWidget {
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF00AA4F),
-                  padding: const EdgeInsets.symmetric(vertical: 10), // Reduced vertical padding to match Review Screen
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),

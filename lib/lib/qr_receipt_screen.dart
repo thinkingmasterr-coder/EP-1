@@ -2,15 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
+import 'user_data.dart';
 
 class QrReceiptScreen extends StatefulWidget {
   final String amount;
   final String storeName;
+  final bool isSpecialQr;
+  final DateTime? dateTime;
 
   const QrReceiptScreen({
     super.key,
     required this.amount,
     required this.storeName,
+    this.isSpecialQr = false,
+    this.dateTime,
   });
 
   @override
@@ -18,30 +23,44 @@ class QrReceiptScreen extends StatefulWidget {
 }
 
 class _QrReceiptScreenState extends State<QrReceiptScreen> {
-  String get _transactionID => "ID#${Random().nextInt(90000000) + 4300000000}";
+  late final String _transactionID;
 
-  String get _displayDate {
-    final now = DateTime.now();
-    return "${now.day.toString().padLeft(2, '0')} ${_getMonth(now.month)} ${now.year}  ${_formatTime(now)}";
+  @override
+  void initState() {
+    super.initState();
+    // Use the same deterministic ID for the same transaction time if possible,
+    // otherwise generate a random one as before.
+    if (widget.dateTime != null) {
+      final random = Random(widget.dateTime!.millisecondsSinceEpoch);
+      _transactionID = "ID#${random.nextInt(90000000) + 4300000000}";
+    } else {
+      _transactionID = "ID#${Random().nextInt(90000000) + 4300000000}";
+    }
   }
 
-  String _getMonth(int month) {
-    const months = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
-    ];
-    return months[month - 1];
+  String get _displayDate {
+    final date = widget.dateTime ?? DateTime.now();
+    // Format changed to: 14 March 2026
+    final DateFormat formatter = DateFormat('dd MMMM yyyy');
+    final String datePart = formatter.format(date);
+    return "$datePart  ${_formatTime(date)}";
   }
 
   String _formatTime(DateTime date) {
-    int hour = date.hour > 12 ? date.hour - 12 : date.hour;
-    String amPm = date.hour >= 12 ? "PM" : "AM";
+    int hour = date.hour;
+    String amPm = hour >= 12 ? "PM" : "AM";
+    
+    // Convert to 12-hour format
+    hour = hour % 12;
+    if (hour == 0) hour = 12; // 0 becomes 12 for 12 AM/PM
+    
     return "${hour}:${date.minute.toString().padLeft(2, '0')} $amPm";
   }
 
   String _formatAmountWithCommas(String amount) {
     try {
-      final number = int.parse(amount);
+      // Keeping your safer parsing logic
+      final number = int.parse(amount.replaceAll(',', ''));
       final formatter = NumberFormat('#,###');
       return formatter.format(number);
     } catch (e) {
@@ -55,7 +74,7 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
     final screenHeight = MediaQuery.of(context).size.height;
 
     // ===============================================================
-    // --- STYLE CONSTANTS (COPIED EXACTLY FROM RECEIPT SCREEN) ---
+    // --- STYLE CONSTANTS (COPIED EXACTLY FROM DESIRED LOOK) ---
     // ===============================================================
     const Color headingColor = Color(0xFF505050);
 
@@ -73,14 +92,8 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
     const double totalLabelFontSize = 16.0;
     const double totalSectionVerticalShift = -10.0;
 
-    const double footerIconScale = 0.85;
-
-    const double greenDotX = 30.5;
-    const double greenDotY = -8.8;
-    const double greenDotSize = 5.5;
-
     // ---------------------------------------------------------------
-    // CHANGED: Reduced height factor because QR receipt has less info
+    // Desired look dimensions
     const double receiptHeightFactor = 0.75;
     const double receiptBottomOffset = 130.0;
     const double receiptHorizontalMargin = 13.0;
@@ -179,9 +192,11 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
 
                                         Transform.translate(
                                           offset: const Offset(0.0, -4.0),
-                                          child: const Text(
-                                            "Your RAAST QR payment has been made",
-                                            style: TextStyle(color: Colors.black54, fontSize: 11),
+                                          child: Text(
+                                            widget.isSpecialQr 
+                                                ? "Your easypaisa QR payment has been made" 
+                                                : "Your RAAST QR payment has been made",
+                                            style: const TextStyle(color: Colors.black54, fontSize: 11),
                                           ),
                                         ),
                                       ],
@@ -235,17 +250,23 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
 
                                   const SizedBox(height: 10),
 
-                                  // FIELD 2: PAID BY (UPDATED)
-                                  _buildCleanField(
-                                      "Paid by",
-                                      "IFTIKHAR KHAN", // <--- UPDATED
-                                      subValue: "03125534518", // <--- UPDATED
-                                      subValueTopPadding: 0.0,
-                                      headingColor: headingColor,
-                                      headingFontSize: headingFontSize,
-                                      subTextFontSize: subTextFontSize,
-                                      headingSubTextSpacing: headingSubTextSpacing,
-                                      subTextLetterSpacing: subTextLetterSpacing
+                                  // FIELD 2: PAID BY (DYNAMIC LOGIC KEPT INTACT)
+                                  ValueListenableBuilder<String>(
+                                    valueListenable: UserData.userName,
+                                    builder: (context, name, _) => ValueListenableBuilder<String>(
+                                      valueListenable: UserData.userNumber,
+                                      builder: (context, number, _) => _buildCleanField(
+                                          "Paid by",
+                                          name,
+                                          subValue: number,
+                                          subValueTopPadding: 0.0,
+                                          headingColor: headingColor,
+                                          headingFontSize: headingFontSize,
+                                          subTextFontSize: subTextFontSize,
+                                          headingSubTextSpacing: headingSubTextSpacing,
+                                          subTextLetterSpacing: subTextLetterSpacing
+                                      ),
+                                    ),
                                   ),
 
                                   SizedBox(height: spaceBeforeAmountField),
@@ -276,7 +297,7 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
 
                                   const Spacer(flex: 4),
 
-                                  // TOTAL SECTION
+                                  // TOTAL SECTION (Styled to match the requested look)
                                   Transform.translate(
                                     offset: Offset(0, totalSectionVerticalShift),
                                     child: Column(
@@ -305,16 +326,20 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
 
                                   const Spacer(flex: 5),
 
-                                  // FOOTER ICONS (Includes Split Bill)
+                                  // FOOTER IMAGE
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 5.0),
+                                    padding: const EdgeInsets.only(bottom: 2.0),
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Adjusted for 4 icons
+                                      mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
-                                        _buildActionItem(Icons.grid_on, "Split Bill", scale: footerIconScale),
-                                        _buildActionItem(Icons.share_outlined, "Share", scale: footerIconScale),
-                                        _buildActionItem(Icons.image_outlined, "Save to Gallery", scale: footerIconScale),
-                                        _buildActionItem(Icons.picture_as_pdf_outlined, "Save as PDF", scale: footerIconScale),
+                                        Transform.translate(
+                                          offset: const Offset(10, -8),
+                                          child: Image.asset(
+                                            'assets/reciept_2.jpg',
+                                            height: 31,
+                                            fit: BoxFit.contain,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -356,16 +381,6 @@ class _QrReceiptScreenState extends State<QrReceiptScreen> {
             ],
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildActionItem(IconData icon, String label, {double scale = 1.0}) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.black54, size: 22 * scale),
-        SizedBox(height: 6 * scale),
-        Text(label, style: TextStyle(fontSize: 10 * scale, color: Colors.grey)),
       ],
     );
   }

@@ -1,6 +1,6 @@
-// File: lib/lib/till_payment_screen.dart
+// File: lib/till_payment_screen.dart
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // [ADDED] Needed for SystemUiOverlayStyle
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'till_processing_screen.dart';
 
@@ -15,10 +15,8 @@ class _TillPaymentScreenState extends State<TillPaymentScreen> {
   final TextEditingController _tillController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
 
-  // [ADDED] State to track if button should be green
   bool _isButtonEnabled = false;
 
-  // [ADDED] Logic to validate inputs
   void _validateInputs() {
     setState(() {
       bool isTillValid = _tillController.text.length >= 4;
@@ -29,8 +27,6 @@ class _TillPaymentScreenState extends State<TillPaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // [ADDED] Wrapped with AnnotatedRegion -> Container(Black) -> SafeArea -> Scaffold
-    // This creates the black strip over the status bar "just like main screen"
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.black,
@@ -78,7 +74,6 @@ class _TillPaymentScreenState extends State<TillPaymentScreen> {
                     ),
                     child: Row(
                       children: [
-                        // [CHANGED] Star: Darker Yellow (0xFFFBC02D), Plus: Smaller (18)
                         Stack(
                           alignment: Alignment.center,
                           children: const [
@@ -116,7 +111,6 @@ class _TillPaymentScreenState extends State<TillPaymentScreen> {
                   // --- 2. TILL PAYMENT HEADER ---
                   _buildGreenStripContainer(
                     child: ListTile(
-                      // [CHANGED] Increased size by 4 points (30 -> 34)
                       leading: Image.asset(
                         'assets/reg_img.png',
                         width: 34,
@@ -156,7 +150,6 @@ class _TillPaymentScreenState extends State<TillPaymentScreen> {
                           ),
                           TextField(
                             controller: _tillController,
-                            // [ADDED] Listener for validation
                             onChanged: (value) => _validateInputs(),
                             decoration: const InputDecoration(
                               hintText: '4~9',
@@ -190,7 +183,6 @@ class _TillPaymentScreenState extends State<TillPaymentScreen> {
                           ),
                           TextField(
                             controller: _amountController,
-                            // [ADDED] Listener for validation
                             onChanged: (value) => _validateInputs(),
                             decoration: const InputDecoration(
                               hintText: '1~100000',
@@ -215,24 +207,30 @@ class _TillPaymentScreenState extends State<TillPaymentScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _isButtonEnabled ? () {
-                          // Double check logic just in case
-                          if (_tillController.text.isNotEmpty && _amountController.text.isNotEmpty) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TillProcessingScreen(
-                                  tillNumber: _tillController.text,
-                                  amount: _amountController.text,
+                          // Dismiss keyboard to prevent layout shift "glitch"
+                          FocusScope.of(context).unfocus();
+                          
+                          // Small delay to let keyboard animate down if needed
+                          Future.delayed(const Duration(milliseconds: 100), () {
+                            if (mounted) {
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) => TillProcessingScreen(
+                                    tillNumber: _tillController.text,
+                                    amount: _amountController.text,
+                                  ),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration: Duration.zero,
                                 ),
-                              ),
-                            );
-                          }
-                        } : null, // Disable click if not valid
+                              );
+                            }
+                          });
+                        } : null,
                         style: ElevatedButton.styleFrom(
-                          // [CHANGED] Logic for Green vs Grey
                           backgroundColor: _isButtonEnabled
-                              ? const Color(0xFF00AA4F) // Active Green
-                              : Colors.grey[400],       // Inactive Grey
+                              ? const Color(0xFF00AA4F)
+                              : Colors.grey[400],
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30.0),

@@ -6,6 +6,7 @@ class TransactionModel {
   final DateTime dateTime;
   final double amount;
   final bool isSent;
+  final bool isDummy;
 
   TransactionModel({
     required this.type,
@@ -15,6 +16,7 @@ class TransactionModel {
     required this.dateTime,
     required this.amount,
     required this.isSent,
+    this.isDummy = false,
   });
 
   // fromJson
@@ -27,6 +29,7 @@ class TransactionModel {
       dateTime: DateTime.parse(json['dateTime']),
       amount: json['amount'],
       isSent: json['isSent'],
+      isDummy: json['isDummy'] ?? false,
     );
   }
 
@@ -40,6 +43,7 @@ class TransactionModel {
       'dateTime': dateTime.toIso8601String(),
       'amount': amount,
       'isSent': isSent,
+      'isDummy': isDummy,
     };
   }
 }

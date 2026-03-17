@@ -3,6 +3,11 @@ import 'package:flutter/material.dart';
 
 class RecipientExperiments {
   // ============================================================
+  // 0. GLOBAL COLORS
+  // ============================================================
+  static const Color primaryGreen = Color(0xFF1EB054); // Lighter and warmer green
+
+  // ============================================================
   // 1. TOP INSTRUCTION ("Enter Mobile Number...")
   // ============================================================
   static const TextStyle instructionText = TextStyle(
