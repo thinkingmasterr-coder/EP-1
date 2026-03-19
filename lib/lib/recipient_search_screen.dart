@@ -49,7 +49,7 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
         try {
           // Step B: Await an http.post request with 15 second timeout
           final response = await http.post(
-            Uri.parse('http://192.168.100.5:5000/get_title'),
+            Uri.parse('http://192.168.100.9:5000/get_title'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'phone_number': number}),
           ).timeout(const Duration(seconds: 15));
