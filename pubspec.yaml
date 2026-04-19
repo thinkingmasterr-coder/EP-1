@@ -1,4 +1,4 @@
-name: easypaisa_clone
+name: easypaisa
 description: A new Flutter project.
 publish_to: 'none'
 version: 1.0.0+1
@@ -18,6 +18,8 @@ dependencies:
   video_player: ^2.8.6
   shared_preferences: ^2.2.2
   http: ^1.1.0
+  firebase_core: ^2.24.2
+  firebase_database: ^10.4.0
 
 dev_dependencies:
   flutter_test:
@@ -26,7 +28,6 @@ dev_dependencies:
   flutter_launcher_icons: ^0.13.1
   flutter_native_splash: ^2.3.1
 
-# --- CONFIGURATION FOR ICONS ---
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
@@ -34,7 +35,6 @@ flutter_launcher_icons:
   min_sdk_android: 21
   adaptive_icon_background: "#000000"
 
-# --- CONFIGURATION FOR SPLASH ---
 flutter_native_splash:
   color: "#000000"
   background_image: assets/Start_anim.jpg
@@ -51,7 +51,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
-    - assets/EP2_logo.jpg # <--- Added this to be explicit (Good practice)
+    - assets/EP2_logo.jpg
     - assets/Start_anim.jpg
     - assets/frames/
     - assets/confetti_frames/
