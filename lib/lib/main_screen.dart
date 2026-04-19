@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'send_menu.dart';
 import 'screens/my_account_screen.dart';
-import 'screens/balance_editor_screen.dart';
 import 'user_data.dart';
 import 'qr_scanner_screen.dart'; // Import the QR scanner screen
 
@@ -22,6 +21,18 @@ class _MainScreenState extends State<MainScreen> {
   // Controls if the balance is shown or hidden (****)
   bool isBalanceVisible = true;
 
+  Future<void> _handleRefresh() async {
+    // Simulate a network delay
+    await Future.delayed(const Duration(milliseconds: 1500));
+    if (mounted) {
+      // Optional: Add a light haptic feedback for that "snap" feel
+      HapticFeedback.lightImpact();
+      setState(() {
+        // Here you could refresh data if needed
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // ==========================================================
@@ -36,10 +47,6 @@ class _MainScreenState extends State<MainScreen> {
     double balanceLeft = 35.0;
     double balanceWidth = 190.0; // Increased width slightly to fit 6 spaced stars
     double balanceHeight = 30.0;
-
-    // EDITOR BUTTON POSITION
-    double editorTop = 450.0;
-    double editorLeft = 250.0;
     // ==========================================================
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -52,140 +59,130 @@ class _MainScreenState extends State<MainScreen> {
         child: SafeArea(
           child: Scaffold(
             backgroundColor: const Color(0xFFF3F4F6),
-            body: Stack(
-              children: [
-                // 1. Background Screenshot
-                Positioned(
-                  top: yOffset,
-                  left: 0,
-                  right: 0,
-                  child: Image.asset(
-                    'assets/home_bg.jpg',
-                    fit: BoxFit.fitWidth,
-                    alignment: Alignment.topCenter,
-                  ),
-                ),
-
-                // 2. Settings Button
-                _buildInvisibleButton(
-                  top: settingsButtonTop,
-                  left: 5,
-                  width: 60,
-                  height: 60,
-                  label: "Settings",
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const MyAccountScreen())
-                    );
-                  },
-                ),
-
-                // 3. Send Money Button
-                _buildInvisibleButton(
-                  top: sendMoneyButtonTop,
-                  left: 1,
-                  width: 150,
-                  height: 100,
-                  label: "Send Money",
-                  onTap: () {
-                    SendMenu.show(context);
-                  },
-                ),
-
-                // 4. THE BALANCE OVERLAY
-                Positioned(
-                  top: balanceTop,
-                  left: balanceLeft,
-                  width: balanceWidth,
-                  height: balanceHeight,
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                        colors: [
-                          Color(0xFF006E59),
-                          Color(0xFF006E59),
-                        ],
+            body: RefreshIndicator(
+              onRefresh: _handleRefresh,
+              color: Colors.black,
+              backgroundColor: Colors.white,
+              displacement: 50,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
+                  child: Stack(
+                    children: [
+                      // 1. Background Screenshot
+                      Positioned(
+                        top: yOffset,
+                        left: 0,
+                        right: 0,
+                        child: Image.asset(
+                          'assets/home_bg.jpg',
+                          fit: BoxFit.fitWidth,
+                          alignment: Alignment.topCenter,
+                        ),
                       ),
-                    ),
 
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.only(left: 0),
+                      // 2. Settings Button
+                      _buildInvisibleButton(
+                        top: settingsButtonTop,
+                        left: 5,
+                        width: 60,
+                        height: 60,
+                        label: "Settings",
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const MyAccountScreen())
+                          );
+                        },
+                      ),
 
-                    child: ValueListenableBuilder<double>(
-                      valueListenable: UserData.balance,
-                      builder: (context, value, child) {
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // The Balance Text
-                            Text(
-                              isBalanceVisible
-                                  ? "Rs. ${NumberFormat('#,##0.00').format(value)}"
-                                  : "* * * * * *", // 6 stars with spaces, NO "Rs."
-                              style: const TextStyle(
-                                color: Color(0xFFEEEEEE),
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      // 3. Send Money Button
+                      _buildInvisibleButton(
+                        top: sendMoneyButtonTop,
+                        left: 1,
+                        width: 150,
+                        height: 100,
+                        label: "Send Money",
+                        onTap: () {
+                          SendMenu.show(context);
+                        },
+                      ),
+
+                      // 4. THE BALANCE OVERLAY
+                      Positioned(
+                        top: balanceTop,
+                        left: balanceLeft,
+                        width: balanceWidth,
+                        height: balanceHeight,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                Color(0xFF006E59),
+                                Color(0xFF006E59),
+                              ],
                             ),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          child: ValueListenableBuilder<double>(
+                            valueListenable: UserData.balance,
+                            builder: (context, value, child) {
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    isBalanceVisible
+                                        ? "Rs. ${NumberFormat('#,##0.00').format(value)}"
+                                        : "* * * * * *",
+                                    style: const TextStyle(
+                                      color: Color(0xFFEEEEEE),
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        isBalanceVisible = !isBalanceVisible;
+                                      });
+                                    },
+                                    child: Icon(
+                                      isBalanceVisible
+                                          ? Icons.visibility_off_outlined
+                                          : Icons.visibility_outlined,
+                                      color: const Color(0xFFEEEEEE),
+                                      size: 20,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
 
-                            const SizedBox(width: 8),
-
-                            // The Eye Icon
-                            GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  isBalanceVisible = !isBalanceVisible;
-                                });
-                              },
-                              child: Icon(
-                                isBalanceVisible
-                                    ? Icons.visibility_off_outlined // Slash shown when visible
-                                    : Icons.visibility_outlined,    // Open eye when invisible
-                                color: const Color(0xFFEEEEEE),
-                                size: 20,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+                      // 5. QR Scanner Button (Invisible)
+                      _buildInvisibleButton(
+                        top: 655,
+                        left: 135,
+                        width: 100,
+                        height: 50,
+                        label: "QR Scanner",
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const QrScannerScreen()),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-
-                // 5. Hidden "Balance Editor" Button
-                _buildInvisibleButton(
-                  top: editorTop,
-                  left: editorLeft,
-                  width: 100,
-                  height: 50,
-                  label: "Edit Balance",
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const BalanceEditorScreen()),
-                    );
-                  },
-                ),
-
-                // 6. QR Scanner Button (Invisible)
-                _buildInvisibleButton(
-                  top: 655,
-                  left: 135,
-                  width: 100,
-                  height: 50,
-                  label: "QR Scanner",
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const QrScannerScreen()),
-                    );
-                  },
-                ),
-              ],
+              ),
             ),
           ),
         ),

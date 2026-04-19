@@ -5,6 +5,7 @@ import 'user_data.dart';
 import 'amount_screen.dart';
 import 'experiment_styles.dart';
 import 'recipient_search_screen.dart';
+import 'transfer_history_screen.dart';
 
 class TransferScreen extends StatefulWidget {
   const TransferScreen({super.key});
@@ -14,6 +15,7 @@ class TransferScreen extends StatefulWidget {
 }
 
 class _TransferScreenState extends State<TransferScreen> {
+  int _selectedTab = 0; // 0 for Send Money, 1 for History
   int _selectedToggleIndex = 0;
   String _inputLabel = "Enter Receiver's Mobile Number";
 
@@ -31,7 +33,7 @@ class _TransferScreenState extends State<TransferScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Changed background color
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -73,213 +75,230 @@ class _TransferScreenState extends State<TransferScreen> {
             child: Row(
               children: [
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: const BoxDecoration(
-                      border: Border(bottom: BorderSide(color: Color(0xFF00AA4F), width: 4.0)), // Made border thicker
-                    ),
-                    child: const Text(
-                      "Send Money",
-                      textAlign: TextAlign.center,
-                      style: ExperimentStyles.tabSelected,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: const Text(
-                      "History",
-                      textAlign: TextAlign.center,
-                      style: TextStyle( // Applied local style
-                        color: Colors.black,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // --- 2. MY EASYPAISA FAVOURITES ---
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text(
-                  "My Easypaisa Favourites",
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  "See All",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 50), // Increased space
-
-          // --- 3. TOGGLE SWITCH ---
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 30),
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF0F0F0),
-              borderRadius: BorderRadius.circular(10),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
                   child: GestureDetector(
-                    onTap: () => _handleToggle(0),
+                    onTap: () => setState(() => _selectedTab = 0),
                     child: Container(
-                      margin: const EdgeInsets.all(2),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: _selectedToggleIndex == 0 ? const Color(0xFF00AA4F) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: _selectedToggleIndex == 0
-                            ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          )
-                        ]
-                            : [],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Mobile No.",
-                        style: _selectedToggleIndex == 0
-                            ? ExperimentStyles.toggleSelected
-                            : ExperimentStyles.toggleUnselected,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => _handleToggle(1),
-                    child: Container(
-                      margin: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: _selectedToggleIndex == 1 ? const Color(0xFF00AA4F) : Colors.transparent,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: _selectedToggleIndex == 1
-                            ? [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          )
-                        ]
-                            : [],
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "Digital Account No",
-                        style: _selectedToggleIndex == 1
-                            ? ExperimentStyles.toggleSelected
-                            : ExperimentStyles.toggleUnselected,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 25),
-
-          // --- 4. SEARCH BAR (Button with Green Line) ---
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _inputLabel,
-                  style: ExperimentStyles.inputLabel,
-                ),
-                const SizedBox(height: 10),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const RecipientSearchScreen()),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: 50, // Fixed height to ensure alignment
-                    clipBehavior: Clip.hardEdge, // This cuts the green line at the rounded corners
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 5,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        // THE NEW GREEN LINE
-                        Container(
-                          width: 5,
-                          height: double.infinity, // Stretches top to bottom
-                          color: const Color(0xFF00AA4F),
-                        ),
-
-                        // THE TEXT & ICON
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10), // Padding is now inside
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: const [
-                                Expanded(
-                                  child: Text(
-                                    "Enter number or select contact",
-                                    style: ExperimentStyles.inputHint,
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                Icon(Icons.search, color: Colors.grey),
-                              ],
-                            ),
+                        border: Border(
+                          bottom: BorderSide(
+                            color: _selectedTab == 0 ? const Color(0xFF00AA4F) : Colors.transparent,
+                            width: 4.0,
                           ),
                         ),
-                      ],
+                      ),
+                      child: Text(
+                        "Send Money",
+                        textAlign: TextAlign.center,
+                        style: _selectedTab == 0 ? ExperimentStyles.tabSelected : ExperimentStyles.tabUnselected,
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() => _selectedTab = 1),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: _selectedTab == 1 ? const Color(0xFF00AA4F) : Colors.transparent,
+                            width: 4.0,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        "History",
+                        textAlign: TextAlign.center,
+                        style: _selectedTab == 1 ? ExperimentStyles.tabSelected : ExperimentStyles.tabUnselected,
+                      ),
                     ),
                   ),
                 ),
               ],
             ),
           ),
+
+          if (_selectedTab == 0) ...[
+            const SizedBox(height: 20),
+
+            // --- 2. MY EASYPAISA FAVOURITES ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Text(
+                    "My Easypaisa Favourites",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  Text(
+                    "See All",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 50),
+
+            // --- 3. TOGGLE SWITCH ---
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 30),
+              height: 40,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0F0F0),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _handleToggle(0),
+                      child: Container(
+                        margin: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: _selectedToggleIndex == 0 ? const Color(0xFF00AA4F) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: _selectedToggleIndex == 0
+                              ? [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                              : [],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Mobile No.",
+                          style: _selectedToggleIndex == 0
+                              ? ExperimentStyles.toggleSelected
+                              : ExperimentStyles.toggleUnselected,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => _handleToggle(1),
+                      child: Container(
+                        margin: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: _selectedToggleIndex == 1 ? const Color(0xFF00AA4F) : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                          boxShadow: _selectedToggleIndex == 1
+                              ? [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            )
+                          ]
+                              : [],
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "Digital Account No",
+                          style: _selectedToggleIndex == 1
+                              ? ExperimentStyles.toggleSelected
+                              : ExperimentStyles.toggleUnselected,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            // --- 4. SEARCH BAR ---
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _inputLabel,
+                    style: ExperimentStyles.inputLabel,
+                  ),
+                  const SizedBox(height: 10),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RecipientSearchScreen()),
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      height: 50,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            spreadRadius: 1,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 5,
+                            height: double.infinity,
+                            color: const Color(0xFF00AA4F),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: const [
+                                  Expanded(
+                                    child: Text(
+                                      "Enter number or select contact",
+                                      style: ExperimentStyles.inputHint,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.search, color: Colors.grey),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ] else ...[
+            // --- HISTORY SCREEN 2.0 ---
+            const Expanded(child: TransferHistoryScreen()),
+          ],
         ],
       ),
     );

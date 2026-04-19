@@ -58,14 +58,14 @@ class _ProcessingScreenState extends State<ProcessingScreen> {
     precacheImage(const AssetImage('assets/reciept_img.png'), context);
     for (int i = 1; i <= sendingTotalFrames; i++) {
       String number = i.toString().padLeft(3, '0');
-      String path = '$sendingFolder/ezgif-frame-$number.png';
+      String path = '$sendingFolder/ezgif-frame-$number.webp';
       var provider = ResizeImage(AssetImage(path), width: cacheWidth);
       _cachedSendingFrames.add(provider);
       precacheImage(provider, context);
     }
     for (int i = 1; i <= confettiTotalFrames; i++) {
       String number = i.toString().padLeft(3, '0');
-      String path = '$confettiFolder/ezgif-frame-$number.png';
+      String path = '$confettiFolder/ezgif-frame-$number.webp';
       var provider = ResizeImage(AssetImage(path), width: cacheWidth);
       _cachedConfettiFrames.add(provider);
       precacheImage(provider, context);

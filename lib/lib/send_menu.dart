@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'transfer_screen.dart';
 import 'qr_scanner_screen.dart';
+import 'error_screen.dart';
 
 class SendMenu extends StatelessWidget {
   const SendMenu({super.key});
@@ -25,10 +26,64 @@ class SendMenu extends StatelessWidget {
     );
   }
 
+  void _handleButtonClick(BuildContext context) {
+    // 1. Show the green rotating loading screen
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Colors.green,
+          strokeWidth: 4,
+        ),
+      ),
+    );
+
+    // 2. Wait 2 seconds then show error screen
+    Future.delayed(const Duration(seconds: 2), () {
+      if (context.mounted) {
+        // Pop the loader
+        Navigator.of(context).pop();
+        // Pop the send menu
+        Navigator.of(context).pop();
+        // Show the error asset screen
+        ErrorScreen.show(context);
+      }
+    });
+  }
+
+  void _handleEasypaisaTransfer(BuildContext context) {
+    // 1. Show the green rotating loading screen
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Colors.green,
+          strokeWidth: 4,
+        ),
+      ),
+    );
+
+    // 2. Wait 1 second then go to TransferScreen
+    Future.delayed(const Duration(seconds: 1), () {
+      if (context.mounted) {
+        // Pop the loader
+        Navigator.of(context).pop();
+        // Pop the send menu
+        Navigator.of(context).pop();
+        // Go to TransferScreen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const TransferScreen()),
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // CHANGED: 0.6 -> 0.3 (Less dark, more visible background)
       backgroundColor: Colors.black.withOpacity(0.3),
       body: GestureDetector(
         onTap: () => Navigator.pop(context),
@@ -64,10 +119,7 @@ class SendMenu extends StatelessWidget {
                       width: 90,
                       height: 90,
                       child: GestureDetector(
-                        onTap: () {
-                          Navigator.pop(context);
-                          Navigator.push(context, MaterialPageRoute(builder: (context) => const TransferScreen()));
-                        },
+                        onTap: () => _handleEasypaisaTransfer(context),
                         child: Container(color: Colors.transparent),
                       ),
                     ),
@@ -83,6 +135,42 @@ class SendMenu extends StatelessWidget {
                           Navigator.pop(context);
                           Navigator.push(context, MaterialPageRoute(builder: (context) => const QrScannerScreen()));
                         },
+                        child: Container(color: Colors.transparent),
+                      ),
+                    ),
+
+                    // 4. NEW BUTTON (Bank Transfer)
+                    Positioned(
+                      top: 70,
+                      left: 125,
+                      width: 90,
+                      height: 90,
+                      child: GestureDetector(
+                        onTap: () => _handleButtonClick(context),
+                        child: Container(color: Colors.transparent),
+                      ),
+                    ),
+
+                    // 5. NEW BUTTON (Other Wallets)
+                    Positioned(
+                      top: 175,
+                      left: 230,
+                      width: 90,
+                      height: 90,
+                      child: GestureDetector(
+                        onTap: () => _handleButtonClick(context),
+                        child: Container(color: Colors.transparent),
+                      ),
+                    ),
+
+                    // 6. NEW BUTTON (Raast Payment)
+                    Positioned(
+                      top: 170,
+                      left: 20,
+                      width: 90,
+                      height: 90,
+                      child: GestureDetector(
+                        onTap: () => _handleButtonClick(context),
                         child: Container(color: Colors.transparent),
                       ),
                     ),

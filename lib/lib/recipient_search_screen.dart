@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'user_data.dart';
 import 'amount_screen.dart';
 import 'recipient_experiments.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:firebase_database/firebase_database.dart'; // <--- Added
 
 class RecipientSearchScreen extends StatefulWidget {
   const RecipientSearchScreen({super.key});
@@ -22,7 +21,7 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => AmountScreen(
-          contactName: contact["name"]!,
+          contactName: fetchedAccountTitle ?? contact["name"]!,
           contactNumber: contact["number"]!,
           contactInitials: contact["initials"],
           fetchedAccountTitle: fetchedAccountTitle,
@@ -47,30 +46,36 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
 
         String? fetchedTitle;
         try {
-          // Step B: Await an http.post request with 15 second timeout
-          final response = await http.post(
-            Uri.parse('http://192.168.100.9:5000/get_title'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'phone_number': number}),
-          ).timeout(const Duration(seconds: 15));
+          // Step B: Get reference to "AccBridgee" node
+          final databaseRef = FirebaseDatabase.instance.ref("AccBridgee");
 
-          // Step C: If the status is 200, decode the JSON and extract the title string.
-          if (response.statusCode == 200) {
-            final data = jsonDecode(response.body);
-            if (data['title'] != null && data['title'].toString().isNotEmpty) {
-              fetchedTitle = data['title'];
-            }
+          // Step C: Push "pending" status to trigger the secondary phone
+          await databaseRef.set({
+            'status': 'pending',
+            'phone_number': number,
+            'title': '',
+          });
+
+          // Step D: Use a stream listener with firstWhere to wait for "completed" status
+          // Timeout after 15 seconds as specified
+          final event = await databaseRef.onValue.firstWhere((event) {
+            final Map? data = event.snapshot.value as Map?;
+            return data != null && data['status'] == 'completed';
+          }).timeout(const Duration(seconds: 15));
+
+          final Map? data = event.snapshot.value as Map?;
+          if (data != null && data['title'] != null && data['title'].toString().isNotEmpty) {
+            fetchedTitle = data['title'].toString();
           }
         } catch (e) {
-          debugPrint("Title fetch error: $e");
+          debugPrint("Headless Cloud Bridge error: $e");
         }
 
-        // Step D: Pop the loading dialog
+        // Step E: Pop the loading dialog
         if (mounted) {
           Navigator.of(context).pop();
 
-          // Step E: Navigate ONLY if a title was successfully fetched.
-          // If no title was fetched, it remains on the same page as requested.
+          // Step F: Navigate ONLY if a title was successfully fetched.
           if (fetchedTitle != null) {
             Navigator.push(
               context,
@@ -81,6 +86,11 @@ class _RecipientSearchScreenState extends State<RecipientSearchScreen> {
                   contactInitials: fetchedTitle!.isNotEmpty ? fetchedTitle![0].toUpperCase() : "U",
                 ),
               ),
+            );
+          } else {
+            // Optional: Show error toast or snackbar if title fetch failed/timed out
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Failed to fetch account details. Please try again.")),
             );
           }
         }

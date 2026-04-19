@@ -13,6 +13,7 @@ class UserData {
   // 3. QR STORE INFO
   static ValueNotifier<String> qrStoreName = ValueNotifier("ZAHID GENERAL STORE");
   static ValueNotifier<String> qrTillNumber = ValueNotifier("12345");
+  static ValueNotifier<bool> isAutoQr = ValueNotifier(false); // New: Toggle between "Written" (false) and "Auto" (true)
 
   // 4. USER INFO
   static ValueNotifier<String> userName = ValueNotifier("IFTIKHAR KHAN");
@@ -20,6 +21,9 @@ class UserData {
 
   // 5. TRANSACTIONS
   static ValueNotifier<List<TransactionModel>> transactions = ValueNotifier([]);
+
+  // 6. SERVER IP
+  static ValueNotifier<String> serverIp = ValueNotifier("192.168.100.9");
 
   // DEFAULT CONTACTS (20 PRE-FILLED)
   static final List<Map<String, String>> _defaultContacts = [
@@ -46,27 +50,27 @@ class UserData {
   ];
 
   // DEFAULT DUMMY TRANSACTIONS (20 PRE-FILLED)
-  static final List<TransactionModel> _defaultTransactions = [
+  static List<TransactionModel> get _defaultTransactions => [
     TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Ahmed Raza", contactNumber: "03001112223", dateTime: DateTime.now().subtract(const Duration(hours: 2)), amount: 500.0, isSent: true, isDummy: true),
     TransactionModel(type: "Raast QR Payment", bankName: "easypaisa", receiverName: "Zahid General Store", contactNumber: "", dateTime: DateTime.now().subtract(const Duration(hours: 5)), amount: 1250.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Salman Khan", contactNumber: "03124445556", dateTime: DateTime.now().subtract(const Duration(days: 1)), amount: 2000.0, isSent: false, isDummy: true),
-    TransactionModel(type: "Easypaisa Mobile Load", bankName: "easypaisa", receiverName: "Telenor Topup", contactNumber: "03456677889", dateTime: DateTime.now().subtract(const Duration(days: 1, hours: 3)), amount: 100.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Omar Farooq", contactNumber: "03331234567", dateTime: DateTime.now().subtract(const Duration(days: 2)), amount: 15000.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Salman Khan", contactNumber: "03124445556", dateTime: DateTime.now().subtract(const Duration(days: 1, hours: 2)), amount: 2000.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Easypaisa Mobile Load", bankName: "easypaisa", receiverName: "Telenor Topup", contactNumber: "03456677889", dateTime: DateTime.now().subtract(const Duration(days: 1, hours: 5)), amount: 100.0, isSent: true, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Omar Farooq", contactNumber: "03331234567", dateTime: DateTime.now().subtract(const Duration(days: 1, hours: 8)), amount: 15000.0, isSent: false, isDummy: true),
     TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Kashif Ali", contactNumber: "03215556667", dateTime: DateTime.now().subtract(const Duration(days: 2, hours: 4)), amount: 350.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Raast QR Payment", bankName: "easypaisa", receiverName: "Gourmet Bakers", contactNumber: "", dateTime: DateTime.now().subtract(const Duration(days: 3)), amount: 890.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Yasir Shah", contactNumber: "03018889990", dateTime: DateTime.now().subtract(const Duration(days: 3, hours: 1)), amount: 5000.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Bilal Jan", contactNumber: "03117774441", dateTime: DateTime.now().subtract(const Duration(days: 4)), amount: 1200.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Raast QR Payment", bankName: "easypaisa", receiverName: "Gourmet Bakers", contactNumber: "", dateTime: DateTime.now().subtract(const Duration(days: 2, hours: 6)), amount: 890.0, isSent: true, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Yasir Shah", contactNumber: "03018889990", dateTime: DateTime.now().subtract(const Duration(days: 3, hours: 1)), amount: 5000.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Bilal Jan", contactNumber: "03117774441", dateTime: DateTime.now().subtract(const Duration(days: 3, hours: 3)), amount: 1200.0, isSent: false, isDummy: true),
     TransactionModel(type: "Easypaisa Mobile Load", bankName: "easypaisa", receiverName: "Zong Load", contactNumber: "03129990001", dateTime: DateTime.now().subtract(const Duration(days: 4, hours: 6)), amount: 200.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Mustafa Kamal", contactNumber: "03442223334", dateTime: DateTime.now().subtract(const Duration(days: 5)), amount: 7500.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Junaid Jamshed", contactNumber: "03314445558", dateTime: DateTime.now().subtract(const Duration(days: 6)), amount: 1000.0, isSent: false, isDummy: true),
-    TransactionModel(type: "Raast QR Payment", bankName: "easypaisa", receiverName: "Imtiaz Super Market", contactNumber: "", dateTime: DateTime.now().subtract(const Duration(days: 7)), amount: 4500.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Sanaullah Khan", contactNumber: "03221110009", dateTime: DateTime.now().subtract(const Duration(days: 8)), amount: 250.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Rizwan Ullah", contactNumber: "03158887776", dateTime: DateTime.now().subtract(const Duration(days: 9)), amount: 3000.0, isSent: false, isDummy: true),
-    TransactionModel(type: "Easypaisa Mobile Load", bankName: "easypaisa", receiverName: "Jazz Load", contactNumber: "03004445551", dateTime: DateTime.now().subtract(const Duration(days: 10)), amount: 500.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Tariq Mahmood", contactNumber: "03401239874", dateTime: DateTime.now().subtract(const Duration(days: 11)), amount: 1800.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Waqas Ahmed", contactNumber: "03356667772", dateTime: DateTime.now().subtract(const Duration(days: 12)), amount: 600.0, isSent: false, isDummy: true),
-    TransactionModel(type: "Raast QR Payment", bankName: "easypaisa", receiverName: "Shell Petrol Pump", contactNumber: "", dateTime: DateTime.now().subtract(const Duration(days: 13)), amount: 2000.0, isSent: true, isDummy: true),
-    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Adnan Siddiqui", contactNumber: "03248883331", dateTime: DateTime.now().subtract(const Duration(days: 14)), amount: 4200.0, isSent: true, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Mustafa Kamal", contactNumber: "03442223334", dateTime: DateTime.now().subtract(const Duration(days: 5, hours: 2)), amount: 7500.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Junaid Jamshed", contactNumber: "03314445558", dateTime: DateTime.now().subtract(const Duration(days: 5, hours: 5)), amount: 1000.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Raast QR Payment", bankName: "easypaisa", receiverName: "Imtiaz Super Market", contactNumber: "", dateTime: DateTime.now().subtract(const Duration(days: 6, hours: 4)), amount: 4500.0, isSent: true, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Sanaullah Khan", contactNumber: "03221110009", dateTime: DateTime.now().subtract(const Duration(days: 7, hours: 1)), amount: 250.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Rizwan Ullah", contactNumber: "03158887776", dateTime: DateTime.now().subtract(const Duration(days: 7, hours: 3)), amount: 3000.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Easypaisa Mobile Load", bankName: "easypaisa", receiverName: "Jazz Load", contactNumber: "03004445551", dateTime: DateTime.now().subtract(const Duration(days: 8, hours: 2)), amount: 500.0, isSent: true, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Tariq Mahmood", contactNumber: "03401239874", dateTime: DateTime.now().subtract(const Duration(days: 9, hours: 5)), amount: 1800.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Waqas Ahmed", contactNumber: "03356667772", dateTime: DateTime.now().subtract(const Duration(days: 10, hours: 4)), amount: 600.0, isSent: false, isDummy: true),
+    TransactionModel(type: "Raast QR Payment", bankName: "easypaisa", receiverName: "Shell Petrol Pump", contactNumber: "", dateTime: DateTime.now().subtract(const Duration(days: 11, hours: 1)), amount: 2000.0, isSent: true, isDummy: true),
+    TransactionModel(type: "Money Transfer", bankName: "easypaisa", receiverName: "Adnan Siddiqui", contactNumber: "03248883331", dateTime: DateTime.now().subtract(const Duration(days: 12, hours: 6)), amount: 4200.0, isSent: false, isDummy: true),
   ];
 
   static Future<void> loadData() async {
@@ -100,10 +104,14 @@ class UserData {
     // LOAD QR STORE INFO
     qrStoreName.value = prefs.getString('qr_store_name') ?? "ZAHID GENERAL STORE";
     qrTillNumber.value = prefs.getString('qr_till_number') ?? "12345";
+    isAutoQr.value = prefs.getBool('is_auto_qr') ?? false;
 
     // LOAD USER INFO
     userName.value = prefs.getString('user_name') ?? "IFTIKHAR KHAN";
     userNumber.value = prefs.getString('user_number') ?? "03125534518";
+
+    // LOAD SERVER IP
+    serverIp.value = prefs.getString('server_ip') ?? "192.168.100.9";
 
     // LOAD TRANSACTIONS
     String? transactionsString = prefs.getString('transactions');
@@ -113,16 +121,36 @@ class UserData {
       loadedTxs = decoded.map((item) => TransactionModel.fromJson(item)).toList();
     }
 
-    // FORCE ADD DEFAULTS if they don't exist by receiverName
+    // Update/Sync Dates relative to now
+    bool txUpdated = await _syncDates(loadedTxs, prefs);
+
+    // FORCE ADD DEFAULTS or UPDATE existing dummies
     bool txMerged = false;
     for (var defaultTx in _defaultTransactions) {
-      bool exists = loadedTxs.any((tx) => 
+      int index = loadedTxs.indexWhere((tx) => 
         tx.isDummy && 
         tx.receiverName == defaultTx.receiverName
       );
-      if (!exists) {
+      
+      if (index == -1) {
         loadedTxs.add(defaultTx);
         txMerged = true;
+      } else {
+        // Update variety for existing dummies if needed
+        var existing = loadedTxs[index];
+        if (existing.isSent != defaultTx.isSent || existing.type != defaultTx.type) {
+           loadedTxs[index] = TransactionModel(
+             type: defaultTx.type,
+             bankName: defaultTx.bankName,
+             receiverName: defaultTx.receiverName,
+             contactNumber: defaultTx.contactNumber,
+             dateTime: existing.dateTime, // Keep the synced date
+             amount: defaultTx.amount,
+             isSent: defaultTx.isSent,
+             isDummy: true,
+           );
+           txMerged = true;
+        }
       }
     }
     
@@ -130,9 +158,45 @@ class UserData {
     loadedTxs.sort((a, b) => b.dateTime.compareTo(a.dateTime));
     transactions.value = loadedTxs;
     
-    if (txMerged) {
+    if (txMerged || txUpdated) {
       await prefs.setString('transactions', jsonEncode(loadedTxs.map((tx) => tx.toJson()).toList()));
     }
+  }
+
+  static Future<bool> _syncDates(List<TransactionModel> txs, SharedPreferences prefs) async {
+    String? lastRefStr = prefs.getString('last_reference_date');
+    DateTime now = DateTime.now();
+    DateTime today = DateTime(now.year, now.month, now.day);
+    bool changed = false;
+
+    if (lastRefStr != null) {
+      DateTime lastRef = DateTime.parse(lastRefStr);
+      DateTime lastRefDay = DateTime(lastRef.year, lastRef.month, lastRef.day);
+      
+      int dayDiff = today.difference(lastRefDay).inDays;
+      
+      if (dayDiff > 0) {
+        // Shift all transactions forward by dayDiff
+        for (int i = 0; i < txs.length; i++) {
+          var tx = txs[i];
+          txs[i] = TransactionModel(
+            type: tx.type,
+            bankName: tx.bankName,
+            receiverName: tx.receiverName,
+            contactNumber: tx.contactNumber,
+            dateTime: tx.dateTime.add(Duration(days: dayDiff)),
+            amount: tx.amount,
+            isSent: tx.isSent,
+            isDummy: tx.isDummy,
+          );
+        }
+        changed = true;
+      }
+    }
+    
+    // Always update the reference date to today
+    await prefs.setString('last_reference_date', today.toIso8601String());
+    return changed;
   }
 
   // SAVE BALANCE
@@ -156,6 +220,13 @@ class UserData {
     await prefs.setString('qr_till_number', till);
   }
 
+  // SAVE QR AUTO TOGGLE
+  static Future<void> setIsAutoQr(bool value) async {
+    isAutoQr.value = value;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('is_auto_qr', value);
+  }
+
   // SAVE USER INFO
   static Future<void> setUserInfo(String name, String number) async {
     userName.value = name;
@@ -163,6 +234,13 @@ class UserData {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_name', name);
     await prefs.setString('user_number', number);
+  }
+
+  // SAVE SERVER IP
+  static Future<void> setServerIp(String ip) async {
+    serverIp.value = ip;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('server_ip', ip);
   }
 
   // PRIVATE HELPER TO SAVE CONTACTS

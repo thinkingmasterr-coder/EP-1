@@ -16,6 +16,7 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
   final TextEditingController _userNameController = TextEditingController();
   final TextEditingController _userNumberController = TextEditingController();
   final TextEditingController _tillNumberController = TextEditingController();
+  final TextEditingController _ipController = TextEditingController();
 
   @override
   void initState() {
@@ -25,6 +26,7 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
     _userNameController.text = UserData.userName.value;
     _userNumberController.text = UserData.userNumber.value;
     _tillNumberController.text = UserData.qrTillNumber.value;
+    _ipController.text = UserData.serverIp.value;
   }
 
   // --- Dialog to Add or Edit Contact ---
@@ -131,7 +133,7 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
     );
   }
 
-  // --- Dialog to Add or Edit Dummy Transaction ---
+  // --- Dialog to Add or Edit Transaction ---
   void _showTransactionDialog({int? index}) {
     final isEditing = index != null;
     TransactionModel? existingTx;
@@ -150,7 +152,7 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(isEditing ? "Edit Dummy Transaction" : "Add Dummy Transaction"),
+          title: Text(isEditing ? "Edit Transaction" : "Add Dummy Transaction"),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -165,7 +167,9 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
                   decoration: const InputDecoration(labelText: "Amount (Rs.)"),
                 ),
                 DropdownButtonFormField<String>(
-                  value: typeController.text,
+                  value: ["Money Transfer", "Raast QR Payment", "Easypaisa Mobile Load"].contains(typeController.text) 
+                      ? typeController.text 
+                      : "Money Transfer",
                   items: ["Money Transfer", "Raast QR Payment", "Easypaisa Mobile Load"]
                       .map((label) => DropdownMenuItem(value: label, child: Text(label)))
                       .toList(),
@@ -234,9 +238,9 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
               onPressed: () {
                 final tx = TransactionModel(
                   type: typeController.text,
-                  bankName: "easypaisa",
+                  bankName: existingTx?.bankName ?? "easypaisa",
                   receiverName: nameController.text,
-                  contactNumber: "",
+                  contactNumber: existingTx?.contactNumber ?? "",
                   dateTime: DateTime(
                     selectedDate.year,
                     selectedDate.month,
@@ -246,7 +250,7 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
                   ),
                   amount: double.tryParse(amountController.text) ?? 0.0,
                   isSent: isSent,
-                  isDummy: true,
+                  isDummy: existingTx?.isDummy ?? true,
                 );
                 
                 if (isEditing) {
@@ -324,10 +328,63 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
 
             const Divider(thickness: 1, height: 1),
 
-            // --- SECTION 2: USER INFO ---
+            // --- SECTION 4: SERVER IP ---
             Container(
               padding: const EdgeInsets.all(20),
               color: Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("SERVER CONFIGURATION", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                  const SizedBox(height: 15),
+                  ValueListenableBuilder<String>(
+                    valueListenable: UserData.serverIp,
+                    builder: (context, currentIp, child) {
+                      return Text("Current IP: $currentIp", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500));
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _ipController,
+                          decoration: const InputDecoration(
+                            labelText: "New Server IP",
+                            hintText: "e.g. 192.168.100.9",
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00AA4F),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                        ),
+                        onPressed: () {
+                          if (_ipController.text.isNotEmpty) {
+                            UserData.setServerIp(_ipController.text);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Server IP Updated!")),
+                            );
+                          }
+                        },
+                        child: const Text("Save"),
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(thickness: 1, height: 1),
+
+            // --- SECTION 2: USER INFO ---
+            Container(
+              padding: const EdgeInsets.all(20),
+              color: Colors.grey[100],
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -377,16 +434,36 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
             // --- SECTION: QR STORE INFO ---
             Container(
               padding: const EdgeInsets.all(20),
-              color: Colors.grey[100],
+              color: Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text("QR STORE INFO", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
                   const SizedBox(height: 15),
+                  ValueListenableBuilder<bool>(
+                    valueListenable: UserData.isAutoQr,
+                    builder: (context, isAuto, _) {
+                      return Row(
+                        children: [
+                          const Text("Written", style: TextStyle(fontWeight: FontWeight.w500)),
+                          Switch(
+                            value: isAuto,
+                            activeColor: const Color(0xFF00AA4F),
+                            onChanged: (val) => UserData.setIsAutoQr(val),
+                          ),
+                          const Text("Auto", style: TextStyle(fontWeight: FontWeight.w500)),
+                          const Spacer(),
+                          if (isAuto)
+                            const Text("(Extracts name from QR)", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: _storeNameController,
                     decoration: const InputDecoration(
-                      labelText: "Store Name",
+                      labelText: "Store Name (Manual)",
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -427,7 +504,7 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
             // --- SECTION 3: TRANSACTIONS ---
             Container(
               padding: const EdgeInsets.all(20),
-              color: Colors.white,
+              color: Colors.grey[100],
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -462,24 +539,24 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
                     ),
                   ),
                   const SizedBox(height: 15),
-                  const Text("DUMMY TRANSACTIONS (EDITABLE)", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
+                  const Text("ALL TRANSACTIONS (EDITABLE)", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)),
                   const SizedBox(height: 5),
                   ValueListenableBuilder<List<TransactionModel>>(
                     valueListenable: UserData.transactions,
                     builder: (context, transactions, child) {
-                      final dummyTxs = transactions.asMap().entries.where((e) => e.value.isDummy).toList();
-                      if (dummyTxs.isEmpty) {
+                      final allTxs = transactions.asMap().entries.toList();
+                      if (allTxs.isEmpty) {
                         return const Padding(
                           padding: EdgeInsets.symmetric(vertical: 10),
-                          child: Text("No dummy transactions added.", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          child: Text("No transactions found.", style: TextStyle(color: Colors.grey, fontSize: 12)),
                         );
                       }
                       return ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: dummyTxs.length,
+                        itemCount: allTxs.length,
                         itemBuilder: (context, index) {
-                          final entry = dummyTxs[index];
+                          final entry = allTxs[index];
                           final tx = entry.value;
                           final originalIndex = entry.key;
                           return Card(
@@ -506,6 +583,14 @@ class _BalanceEditorScreenState extends State<BalanceEditorScreen> {
                               trailing: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
+                                  if (!tx.isDummy)
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 8.0),
+                                      child: Tooltip(
+                                        message: "Real Transaction",
+                                        child: Icon(Icons.verified, size: 16, color: Colors.green),
+                                      ),
+                                    ),
                                   IconButton(
                                     icon: const Icon(Icons.edit, size: 20, color: Colors.blue),
                                     onPressed: () => _showTransactionDialog(index: originalIndex),

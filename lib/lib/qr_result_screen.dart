@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:easypaisa_clone/qr_review_screen.dart';
+import 'package:easypaisa/qr_review_screen.dart';
 import 'user_data.dart';
 
 class QrResultScreen extends StatefulWidget {
@@ -15,9 +15,6 @@ class _QrResultScreenState extends State<QrResultScreen> {
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
   int _messageLength = 0;
-
-  // The special QR code string
-  static const String specialQrCode = "0002010102112876003213bb98ea283b452b9d979bf570fc49ed0108TMICFBPK0224PK50TMFB00000000118677755204539953035865802PK5915ZAHID COLD DRIN6009Charsadda64380002EN0115ZAHID COLD DRIN0209Charsadda62520528OPS1|38563|ZAHID COLD DRINKS030712013180805Other6304B41D";
 
   @override
   void initState() {
@@ -36,10 +33,72 @@ class _QrResultScreenState extends State<QrResultScreen> {
     super.dispose();
   }
 
+  String _getStoreName() {
+    if (UserData.isAutoQr.value) {
+      return _extractNameFromQr(widget.qrCode);
+    } else {
+      return UserData.qrStoreName.value;
+    }
+  }
+
+  String _extractNameFromQr(String qr) {
+    // We collect all possible names here
+    List<String> nameCandidates = [];
+
+    try {
+      int i = 0;
+      while (i < qr.length - 4) {
+        String tag = qr.substring(i, i + 2);
+        int length = int.parse(qr.substring(i + 2, i + 4));
+        String value = qr.substring(i + 4, i + 4 + length);
+
+        // Standard Merchant Name (Tag 59)
+        if (tag == "59") {
+          nameCandidates.add(value.trim());
+        }
+        // Additional Data Field (Tag 62)
+        else if (tag == "62") {
+          int j = 0;
+          while (j < value.length - 4) {
+            String subTag = value.substring(j, j + 2);
+            int subLength = int.parse(value.substring(j + 2, j + 4));
+            String subValue = value.substring(j + 4, j + 4 + subLength);
+
+            // EMVCo standard for Store/Terminal Label
+            if (subTag == "03" || subTag == "07") {
+              nameCandidates.add(subValue.trim());
+            }
+            // Proprietary format (Easypaisa/JazzCash)
+            else if (subTag == "05") {
+              List<String> parts = subValue.split('|');
+              if (parts.isNotEmpty) {
+                nameCandidates.add(parts.last.trim());
+              }
+            }
+            j += 4 + subLength;
+          }
+        }
+
+        i += 4 + length;
+      }
+    } catch (e) {
+      debugPrint("QR Parse Error: $e");
+    }
+
+    // Sort all candidates by length (longest first)
+    // This guarantees we get the uncut name and bypass short terminal IDs
+    if (nameCandidates.isNotEmpty) {
+      nameCandidates.sort((a, b) => b.length.compareTo(a.length));
+      return nameCandidates.first;
+    }
+
+    // Fallback if absolutely nothing was found
+    return UserData.qrStoreName.value;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Logic to determine display name
-    final bool isSpecialQr = widget.qrCode == specialQrCode;
+    final String storeName = _getStoreName();
 
     return Scaffold(
       appBar: AppBar(
@@ -72,26 +131,14 @@ class _QrResultScreenState extends State<QrResultScreen> {
                 children: [
                   Image.asset('assets/qr_code1.png', width: 150, height: 150),
                   const SizedBox(height: 10),
-                  isSpecialQr 
-                    ? const Text(
-                        "ZAHID COLD DRINKS",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      )
-                    : ValueListenableBuilder<String>(
-                        valueListenable: UserData.qrStoreName,
-                        builder: (context, name, _) => Text(
-                          name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                          ),
-                        ),
-                      ),
+                  Text(
+                    storeName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -186,8 +233,8 @@ class _QrResultScreenState extends State<QrResultScreen> {
                     MaterialPageRoute(
                       builder: (context) => QrReviewScreen(
                         amount: _amountController.text,
-                        storeName: isSpecialQr ? "ZAHID COLD DRINKS" : UserData.qrStoreName.value,
-                        isSpecialQr: isSpecialQr,
+                        storeName: storeName,
+                        isSpecialQr: false,
                       ),
                     ),
                   );

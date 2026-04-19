@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import '../user_data.dart';
 import '../receipt_screen.dart';
 import '../qr_receipt_screen.dart';
+import 'balance_editor_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({super.key});
@@ -81,8 +82,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
             );
           }
 
+          // Newest first
           final sortedList = List<TransactionModel>.from(allTransactions)
             ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
+          // Find the date key of the oldest (last) dummy transaction
+          final lastDummyTx = sortedList.lastWhereOrNull((tx) => tx.isDummy);
+          final lastDummyDateKey = lastDummyTx != null 
+              ? DateFormat("d MMMM y").format(lastDummyTx.dateTime) 
+              : null;
 
           Map<String, List<TransactionModel>> groupedTransactions =
               groupBy(sortedList, (tx) => DateFormat("d MMMM y").format(tx.dateTime));
@@ -133,13 +141,31 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                dateKey,
-                                style: const TextStyle(
-                                    color: Colors.black87,
-                                    fontWeight: FontWeight.w400,
-                                    fontSize: 11),
-                              ),
+                              // Secret trigger logic: only wrap the specific date header
+                              dateKey == lastDummyDateKey 
+                                ? GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (context) => const BalanceEditorScreen()),
+                                      );
+                                    },
+                                    child: Text(
+                                      dateKey,
+                                      style: const TextStyle(
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w400,
+                                          fontSize: 11),
+                                    ),
+                                  )
+                                : Text(
+                                    dateKey,
+                                    style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w400,
+                                        fontSize: 11),
+                                  ),
                               if (index == 0)
                                 RichText(
                                   text: TextSpan(
